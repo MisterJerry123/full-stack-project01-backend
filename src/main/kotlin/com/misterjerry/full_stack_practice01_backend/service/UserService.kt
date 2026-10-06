@@ -3,7 +3,9 @@ package com.misterjerry.full_stack_practice01_backend.service
 import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
 import com.misterjerry.full_stack_practice01_backend.entity.User
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import org.springframework.stereotype.Service
 
+@Service
 class UserService(
     private val userRepository: UserRepository
 ) {
