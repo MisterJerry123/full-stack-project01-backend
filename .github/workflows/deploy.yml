@@ -70,8 +70,21 @@ jobs:
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
+          if [ -z "$ORACLE_KNOWN_HOSTS" ]; then
+            echo "ERROR: ORACLE_KNOWN_HOSTS Secret이 비어 있습니다."
+            exit 1
+          fi
+
           printf '%s\n' "$ORACLE_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+
+          echo "SSH 호스트 키 등록 확인:"
+          if ssh-keygen -F "$ORACLE_HOST" -f ~/.ssh/known_hosts > /dev/null; then
+            echo "OK: ORACLE_HOST에 해당하는 호스트 키가 등록되어 있습니다."
+          else
+            echo "ERROR: ORACLE_HOST와 일치하는 호스트 키가 없습니다."
+            exit 1
+          fi
 
       - name: Deploy to Oracle Cloud
         env:
