@@ -28,7 +28,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build Spring Boot JAR
-        working-directory: ./backend
+        working-directory: .
         run: bash ./gradlew clean bootJar --no-daemon
 
       - name: Set up Docker Buildx
@@ -43,7 +43,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./backend
+          context: .
           push: true
           tags: |
             misterjerry/fullstack-backend:latest
