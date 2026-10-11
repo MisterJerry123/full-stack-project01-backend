@@ -1,0 +1,9 @@
+.git
+.gradle
+.idea
+**/.env
+**/application-local.properties
+build/*
+!build/libs/
+build/libs/*
+!build/libs/app.jar
