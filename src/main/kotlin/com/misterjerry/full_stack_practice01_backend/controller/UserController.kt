@@ -24,4 +24,8 @@ class UserController(
     fun test(): String {
         return "ABC"
     }
+    @GetMapping("/asdf")
+    fun automaticDeployTest():String{
+        return "자동 배포 성공!!!"
+    }
 }
