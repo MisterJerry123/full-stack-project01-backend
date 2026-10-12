@@ -1,11 +1,13 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
 
+@RestController
 class HealthController {
 
     @GetMapping("/health")
     fun health():String{
-        return "ok"
+        return "OK"
     }
 }
