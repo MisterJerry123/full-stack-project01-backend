@@ -10,4 +10,8 @@ class HealthController {
     fun health():String{
         return "OK"
     }
+    @GetMapping("/bmtn")
+    fun bmtn(): String{
+        return "바멍똥남 메롱"
+    }
 }
