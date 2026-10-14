@@ -32,7 +32,8 @@ class SecurityConfig {
 
                 it.requestMatchers(
                     HttpMethod.GET,
-                    "/health"
+                    "/health",
+                    "/bmtn"
                 ).permitAll()
 
                 it.anyRequest().authenticated()
