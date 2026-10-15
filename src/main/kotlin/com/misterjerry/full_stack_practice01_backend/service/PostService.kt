@@ -19,4 +19,9 @@ class PostService(
 
         return postRepository.save(post).id
     }
+
+    fun searchPost(postId: Long): Post {
+        return postRepository.findById(postId)
+            .orElseThrow { throw IllegalArgumentException("게시글이 없습니다.") }
+    }
 }

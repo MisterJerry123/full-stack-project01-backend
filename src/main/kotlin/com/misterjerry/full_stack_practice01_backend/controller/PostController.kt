@@ -1,5 +1,6 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
+import com.misterjerry.full_stack_practice01_backend.dto.GetPostResponse
 import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.service.PostService
 import io.swagger.v3.oas.annotations.Operation
@@ -8,9 +9,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -35,5 +38,12 @@ class PostController(
             .status(HttpStatus.CREATED)
             .body(postService.createPost(postRequest = request, authorId = authorId))
     }
+    @GetMapping("/inquiry")
+    fun searchPost(
+        @RequestParam postId: Long
+    ): ResponseEntity<GetPostResponse>{
 
+        val post = postService.searchPost(postId)
+        return ResponseEntity.ok(GetPostResponse(post))
+    }
 }
