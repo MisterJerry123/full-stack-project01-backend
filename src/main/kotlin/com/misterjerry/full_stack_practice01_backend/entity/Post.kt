@@ -9,6 +9,7 @@ import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 @Entity
 @Table(name = "posts")
@@ -35,13 +36,13 @@ class Post(
 ) {
     @PrePersist
     fun onCreate() {
-        createdAt = LocalDateTime.now()
-        updatedAt = LocalDateTime.now()
+        createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
+        updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
     }
 
     @PreUpdate
     fun onUpdate() {
-        updatedAt = LocalDateTime.now()
+        updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"))
 
     }
 
