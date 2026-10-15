@@ -97,3 +97,32 @@ jobs:
             -o StrictHostKeyChecking=yes \
             "$ORACLE_USER@$ORACLE_HOST" \
             "/home/ubuntu/deploy.sh '$IMAGE_TAG'"
+
+  notify:
+    needs: deploy
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$DEPLOY_RESULT" = "success" ]; then
+            MESSAGE="✅ 배포 성공! [$REPO]($RUN_URL)"
+          elif [ "$DEPLOY_RESULT" = "failure" ]; then
+            MESSAGE="❌ 배포 실패! [$REPO]($RUN_URL)"
+          else
+            MESSAGE="⚠️ 배포 상태: $DEPLOY_RESULT [$REPO]($RUN_URL)"
+          fi
+
+          jq -n --arg content "$MESSAGE" \
+            '{content: $content}' > payload.json
+
+          curl --fail-with-body -sS \
+            -H "Content-Type: application/json" \
+            -d @payload.json \
+            "$DISCORD_WEBHOOK"
