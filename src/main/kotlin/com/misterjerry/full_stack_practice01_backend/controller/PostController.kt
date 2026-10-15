@@ -2,6 +2,8 @@ package com.misterjerry.full_stack_practice01_backend.controller
 
 import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.service.PostService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -16,7 +18,13 @@ import org.springframework.web.bind.annotation.RestController
 class PostController(
     private val postService: PostService
 ) {
+    @Operation(
+        summary = "게시글 작성",
+        description = "로그인한 사용자가 새 게시글을 작성합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/create")
+
     fun createPost(
         @AuthenticationPrincipal jwt: Jwt,
         @RequestBody request: PostRequest,
