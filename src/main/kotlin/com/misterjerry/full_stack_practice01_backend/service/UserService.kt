@@ -48,7 +48,7 @@ class UserService(
     fun getMyInfo(userId: Long): UserResponse {
         val user = userRepository.findById(userId)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.") }
-        return UserResponse(user.id, user.name, user.email)
+        return UserResponse(user.id, user.email, user.name)
     }
 
 
