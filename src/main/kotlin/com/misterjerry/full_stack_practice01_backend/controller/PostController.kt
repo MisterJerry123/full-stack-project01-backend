@@ -1,12 +1,14 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
 import com.misterjerry.full_stack_practice01_backend.dto.GetPostResponse
+import com.misterjerry.full_stack_practice01_backend.dto.GetPostsResponse
 import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UpdatePostRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Post
 import com.misterjerry.full_stack_practice01_backend.service.PostService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -62,7 +64,7 @@ class PostController(
         summary = "게시글 수정",
         description = "게시글을 수정합니다."
     )
-    @SecurityRequirement( name = "bearerAuth")
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/update")
     fun updatePost(
         @AuthenticationPrincipal jwt: Jwt,
@@ -72,19 +74,46 @@ class PostController(
         val authorId =
             jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
 
-        return ResponseEntity.status(HttpStatus.OK).body(postService.updatePost(request, postId, authorId))
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(postService.updatePost(request, postId, authorId))
     }
 
     @Operation(
         summary = "게시글 삭제",
         description = "게시글을 삭제합니다."
     )
-    @SecurityRequirement(name="bearerAuth")
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/delete")
-    fun deletePost(@AuthenticationPrincipal jwt: Jwt, @RequestParam postId:Long): ResponseEntity<Long>{
-        val authorId = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
-        return ResponseEntity.status(HttpStatus.OK).body(postService.deletePost(postId,authorId))
+    fun deletePost(
+        @AuthenticationPrincipal jwt: Jwt,
+        @RequestParam postId: Long
+    ): ResponseEntity<Long> {
+        val authorId =
+            jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
+        return ResponseEntity.status(HttpStatus.OK).body(postService.deletePost(postId, authorId))
 
+    }
+
+    @Operation(
+        summary = "게시글 전체 조회",
+        description = "page와 page 크기를 입력받는다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/posts")
+    fun getPosts(
+        @RequestParam page: Int,
+        @RequestParam size: Int = 10
+    ): ResponseEntity<GetPostsResponse> {
+
+        val result = postService.getPosts(page, size)
+        return ResponseEntity.status(HttpStatus.OK).body(
+            GetPostsResponse(
+                result.content,
+                totalPages = result.totalPages,
+                totalElements = result.totalElements,
+                currentPage = result.number
+            )
+        )
     }
 
 }

@@ -5,6 +5,9 @@ import com.misterjerry.full_stack_practice01_backend.dto.UpdatePostRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Post
 import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
 import jakarta.transaction.Transactional
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -60,6 +63,11 @@ class PostService(
         }
         postRepository.delete(post)
         return postId
+    }
+
+    fun getPosts(page:Int,size:Int): Page<Post> {
+        val pageable = PageRequest.of(page, size)
+        return postRepository.findAll(pageable)
     }
 
 }
