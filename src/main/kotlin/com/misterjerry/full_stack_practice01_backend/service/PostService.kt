@@ -66,7 +66,7 @@ class PostService(
     }
 
     fun getPosts(page:Int,size:Int): Page<Post> {
-        val pageable = PageRequest.of(page, size)
+        val pageable = PageRequest.of(page, size,Sort.by(Sort.Direction.DESC,"createdAt"))
         return postRepository.findAll(pageable)
     }
 
