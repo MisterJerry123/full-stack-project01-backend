@@ -38,6 +38,12 @@ class PostController(
             .status(HttpStatus.CREATED)
             .body(postService.createPost(postRequest = request, authorId = authorId))
     }
+
+    @Operation(
+        summary = "게시글 단건 조회",
+        description = "게시글 번호로 게시글을 조회합니다."
+    )
+    @SecurityRequirement(name="bearerAuth")
     @GetMapping("/inquiry")
     fun searchPost(
         @RequestParam postId: Long
