@@ -8,6 +8,7 @@ import com.misterjerry.full_stack_practice01_backend.entity.Post
 import com.misterjerry.full_stack_practice01_backend.service.PostService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -36,7 +37,7 @@ class PostController(
     @PostMapping
     fun createPost(
         @AuthenticationPrincipal jwt: Jwt,
-        @RequestBody request: PostRequest,
+        @RequestBody @Valid request: PostRequest,
     ): ResponseEntity<Long> {
         val authorId = jwt.subject?.toLongOrNull() ?: throw IllegalStateException("유효하지 않은 유저입니다.")
 
@@ -74,7 +75,7 @@ class PostController(
     @PatchMapping("/{postId}")
     fun updatePost(
         @AuthenticationPrincipal jwt: Jwt,
-        @RequestBody request: UpdatePostRequest,
+        @RequestBody @Valid request: UpdatePostRequest,
         @PathVariable postId: Long
     ): ResponseEntity<Long> {
         val authorId =

@@ -5,6 +5,7 @@ import com.misterjerry.full_stack_practice01_backend.dto.LoginResponse
 import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UserResponse
 import com.misterjerry.full_stack_practice01_backend.service.UserService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
@@ -21,7 +22,7 @@ class UserController(
 ) {
     @PostMapping("/signUp")
     fun signUp(
-        @RequestBody request: SignUpRequest
+        @RequestBody @Valid request: SignUpRequest
     ): Long{
         return userService.signUp(request)
     }
@@ -36,7 +37,7 @@ class UserController(
     }
 
     @PostMapping("/login")
-    fun login(@RequestBody request: LoginRequest): ResponseEntity<LoginResponse>{
+    fun login(@RequestBody @Valid request: LoginRequest): ResponseEntity<LoginResponse>{
         val accessToken = userService.login(request.email,request.password)
         return ResponseEntity.ok(
             LoginResponse(accessToken)
