@@ -32,7 +32,6 @@ class SecurityConfig {
                 ).permitAll()
 
                 it.requestMatchers(
-                    HttpMethod.GET,
                     "/health",
                     "/bmtn"
                 ).permitAll()
