@@ -1,0 +1,75 @@
+name: Periodic Health Check
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Check Backend Health
+        id: check
+        shell: bash
+        run: |
+          URL="https://misterjerry-fullstackproject01.duckdns.org/health"
+
+          HTTP_STATUS=$(curl \
+            --output /dev/null \
+            --silent \
+            --show-error \
+            --write-out "%{http_code}" \
+            --max-time 10 \
+            "$URL" 2>curl_error.log) || CURL_EXIT=$?
+
+          CURL_EXIT=${CURL_EXIT:-0}
+
+          if [ "$CURL_EXIT" -ne 0 ]; then
+            HTTP_STATUS="CURL_ERROR_${CURL_EXIT}"
+            echo "curl 오류:"
+            cat curl_error.log
+          fi
+
+          echo "HTTP 응답 상태: $HTTP_STATUS"
+          echo "http_status=$HTTP_STATUS" >> "$GITHUB_OUTPUT"
+
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "server_down=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "server_down=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Discord Alert if Down
+        if: steps.check.outputs.server_down == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          STATUS: ${{ steps.check.outputs.http_status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "::error::DISCORD_WEBHOOK_URL secret이 설정되지 않았습니다."
+            exit 1
+          fi
+
+          MESSAGE="🚨 **[서버 장애 감지]** 백엔드 서버가 정상 응답하지 않습니다!
+          - 대상 주소: https://misterjerry-fullstackproject01.duckdns.org/health
+          - 응답 상태: \`${STATUS}\`
+          - 확인 저장소: ${REPO}
+          - 실행 로그: ${RUN_URL}"
+
+          jq -n --arg content "$MESSAGE" \
+            '{content: $content}' > payload.json
+
+          curl --fail-with-body --silent --show-error \
+            --max-time 10 \
+            -H "Content-Type: application/json" \
+            --data @payload.json \
+            "$DISCORD_WEBHOOK"
