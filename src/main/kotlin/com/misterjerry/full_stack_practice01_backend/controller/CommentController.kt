@@ -1,19 +1,24 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
 import com.misterjerry.full_stack_practice01_backend.dto.CommentRequest
+import com.misterjerry.full_stack_practice01_backend.entity.Comment
 import com.misterjerry.full_stack_practice01_backend.service.CommentService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import jakarta.transaction.Transactional
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("api/posts")
@@ -40,6 +45,40 @@ class CommentController(
                 authorId = author
             )
         )
+    }
 
+
+    @Operation(summary = "댓글 단건 조회", description = "댓글 번호에 해당하는 댓글 1개를 조회합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("{postId}/comments/{commentId}")
+    fun getComment(
+        @AuthenticationPrincipal jwt: Jwt,
+        @PathVariable postId: Long,
+        @PathVariable commentId: Long
+    ): ResponseEntity<Comment> {
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(commentService.getComment(commentId = commentId))
+
+    }
+
+    @Operation(summary = "댓글 삭제", description = "댓글 번호에 해당하는 댓글을 삭제합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @Transactional
+    @DeleteMapping("{postId}/comments/{commentId}")
+    fun deleteComment(
+        @AuthenticationPrincipal jwt: Jwt,
+        @PathVariable postId: Long,
+        @PathVariable commentId: Long,
+    ): ResponseEntity<Long> {
+        val user = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효한 유저가 아닙니다.")
+
+        return ResponseEntity.status(HttpStatus.OK)
+            .body(
+                commentService.deleteComment(
+                    postId = postId,
+                    authorId = user,
+                    commentId = commentId
+                )
+            )
     }
 }
