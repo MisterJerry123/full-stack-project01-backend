@@ -43,7 +43,7 @@ class UserController(
         )
     }
 
-    @PostMapping("/me")
+    @GetMapping("/me")
     fun searchMyInfo(
         @AuthenticationPrincipal jwt: Jwt
     ): ResponseEntity<UserResponse>{
