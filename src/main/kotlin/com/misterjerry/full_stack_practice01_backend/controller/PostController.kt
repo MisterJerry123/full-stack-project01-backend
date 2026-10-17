@@ -56,7 +56,13 @@ class PostController(
     ): ResponseEntity<GetPostResponse> {
 
         val post = postService.searchPost(postId)
-        return ResponseEntity.ok(GetPostResponse(post))
+        return ResponseEntity.ok(GetPostResponse(
+            title = post.title,
+            content = post.content,
+            authorName = post.author.name,
+            createdAt = post.createdAt,
+            updatedAt = post.updatedAt
+        ))
     }
 
 
@@ -108,7 +114,13 @@ class PostController(
         val result = postService.getPosts(page, size)
         return ResponseEntity.status(HttpStatus.OK).body(
             GetPostsResponse(
-                result.content,
+                posts= result.content.map { GetPostResponse(
+                    title = it.title,
+                    content = it.content,
+                    authorName = it.author.name,
+                    createdAt = it.createdAt,
+                    updatedAt = it.updatedAt
+                ) },
                 totalPages = result.totalPages,
                 totalElements = result.totalElements,
                 currentPage = result.number

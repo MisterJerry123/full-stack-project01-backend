@@ -1,7 +1,11 @@
 package com.misterjerry.full_stack_practice01_backend.dto
 
-import com.misterjerry.full_stack_practice01_backend.entity.Post
+import java.time.LocalDateTime
 
 data class GetPostResponse(
-    val post: Post
+    val title:String,
+    val content:String,
+    val authorName: String,
+    val createdAt: LocalDateTime,
+    val updatedAt:LocalDateTime,
 )
