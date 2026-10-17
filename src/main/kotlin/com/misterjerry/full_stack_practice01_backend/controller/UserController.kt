@@ -43,16 +43,12 @@ class UserController(
         )
     }
 
-    @PostMapping("/myInfo")
+    @PostMapping("/me")
     fun searchMyInfo(
         @AuthenticationPrincipal jwt: Jwt
     ): ResponseEntity<UserResponse>{
         val userId = jwt.subject?.toLong() ?: throw IllegalStateException("유효하지 않은 유저입니다.")
-
-        userService.getMyInfo(userId = userId)
-
-        return ResponseEntity.ok(userService.getMyInfo(userId))
-
-
+        val myInfo = userService.getMyInfo(userId = userId)
+        return ResponseEntity.ok(myInfo)
     }
 }
