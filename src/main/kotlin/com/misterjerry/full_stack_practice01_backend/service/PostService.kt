@@ -4,6 +4,7 @@ import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UpdatePostRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Post
 import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
+import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -14,14 +15,16 @@ import org.springframework.web.server.ResponseStatusException
 
 @Service
 class PostService(
-    private val postRepository: PostRepository
+    private val postRepository: PostRepository,
+    private val userRepository: UserRepository
 ) {
     fun createPost(postRequest: PostRequest, authorId: Long): Long {
-
+        val user = userRepository.findById(authorId)
+            .orElseThrow { throw IllegalStateException("유효하지 않은 유저입니다.") }
         val post = Post(
             title = postRequest.title,
             content = postRequest.content,
-            authorId = authorId,
+            author = user,
         )
 
         return postRepository.save(post).id
@@ -42,7 +45,7 @@ class PostService(
                 throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다.")
             }
 
-        if (post.authorId != authorId) {
+        if (post.author.id != authorId) {
             throw ResponseStatusException(
                 HttpStatus.FORBIDDEN,
                 "본인의 게시글만 수정할 수 있습니다."
@@ -53,20 +56,21 @@ class PostService(
 
         return post.id
     }
+
     @Transactional
     fun deletePost(postId: Long, authorId: Long): Long {
         val post = postRepository.findById(postId)
             .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "해당하는 게시글이 없습니다.") }
 
-        if (post.authorId != authorId) {
+        if (post.author.id != authorId) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "본인의 게시글만 삭제할 수 있습니다.")
         }
         postRepository.delete(post)
         return postId
     }
 
-    fun getPosts(page:Int,size:Int): Page<Post> {
-        val pageable = PageRequest.of(page, size,Sort.by(Sort.Direction.DESC,"createdAt"))
+    fun getPosts(page: Int, size: Int): Page<Post> {
+        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         return postRepository.findAll(pageable)
     }
 

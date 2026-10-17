@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,8 +33,7 @@ class PostController(
         description = "로그인한 사용자가 새 게시글을 작성합니다."
     )
     @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/create")
-
+    @PostMapping
     fun createPost(
         @AuthenticationPrincipal jwt: Jwt,
         @RequestBody request: PostRequest,
@@ -50,9 +50,9 @@ class PostController(
         description = "게시글 번호로 게시글을 조회합니다."
     )
     @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/inquiry")
+    @GetMapping("/{postId}")
     fun searchPost(
-        @RequestParam postId: Long
+        @PathVariable postId: Long
     ): ResponseEntity<GetPostResponse> {
 
         val post = postService.searchPost(postId)
@@ -65,11 +65,11 @@ class PostController(
         description = "게시글을 수정합니다."
     )
     @SecurityRequirement(name = "bearerAuth")
-    @PatchMapping("/update")
+    @PatchMapping("/{postId}")
     fun updatePost(
         @AuthenticationPrincipal jwt: Jwt,
         @RequestBody request: UpdatePostRequest,
-        @RequestParam postId: Long
+        @PathVariable postId: Long
     ): ResponseEntity<Long> {
         val authorId =
             jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
@@ -83,10 +83,10 @@ class PostController(
         description = "게시글을 삭제합니다."
     )
     @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/{postId}")
     fun deletePost(
         @AuthenticationPrincipal jwt: Jwt,
-        @RequestParam postId: Long
+        @PathVariable postId: Long
     ): ResponseEntity<Long> {
         val authorId =
             jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
@@ -99,7 +99,7 @@ class PostController(
         description = "page와 page 크기를 입력받는다."
     )
     @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/posts")
+    @GetMapping
     fun getPosts(
         @RequestParam page: Int,
         @RequestParam size: Int = 10
