@@ -1,6 +1,7 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
 import com.misterjerry.full_stack_practice01_backend.dto.LoginRequest
+import com.misterjerry.full_stack_practice01_backend.dto.LoginResponse
 import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
 import com.misterjerry.full_stack_practice01_backend.entity.User
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
@@ -13,7 +14,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tools.jackson.databind.ObjectMapper
 
@@ -35,6 +38,7 @@ class UserControllerTest {
 
     val signUpUrl = "/api/users/signUp"
     val loginUrl = "/api/users/login"
+    val meUrl = "/api/users/me"
 
     @BeforeEach
     fun setUp() {
@@ -145,7 +149,7 @@ class UserControllerTest {
     //로그인
 
     @Test
-    fun `맞는 계정은 로그인이 되어야 한다`() {
+    fun `맞는 계정은 로그인이 되고 AccessToken을 반환하여야 한다`() {
         val request = LoginRequest(
             email = "testtest@test.com",
             password = "testtest",
@@ -157,10 +161,12 @@ class UserControllerTest {
                 .content(json)
         )
             .andExpect(status().isOk)
+            .andExpect(jsonPath("$.accessToken").isNotEmpty)
+            .andExpect(jsonPath("$.tokenType").value("Bearer"))
     }
 
     @Test
-    fun ` 비밀번호가 틀린 계정은 로그인이 되면 안된다`() {
+    fun `비밀번호가 틀린 계정은 로그인이 되면 안된다`() {
         val request = LoginRequest(
             email = "testtest@test.com",
             password = "test"
@@ -178,7 +184,7 @@ class UserControllerTest {
     @Test
     fun `이메일 형식이 아닌 경우 로그인 되지 않는다`() {
         val request = LoginRequest(
-            email = "test",
+            email = "testtest",
             password = "testtest"
         )
         val json = objectMapper.writeValueAsString(request)
@@ -193,7 +199,7 @@ class UserControllerTest {
     @Test
     fun `비밀번호가 공백인 경우 로그인 되지 않는다`() {
         val request = LoginRequest(
-            email = "test@test.com",
+            email = "testtest@test.com",
             password = " "
         )
         val json = objectMapper.writeValueAsString(request)
@@ -204,4 +210,71 @@ class UserControllerTest {
         )
             .andExpect(status().isBadRequest)
     }
+
+    //me
+    @Test
+    fun `토큰이 있으면 내 정보 조회가 된다`() {
+        val loginRequest = LoginRequest(
+            email = "testtest@test.com",
+            password = "testtest"
+        )
+        val loginJson = objectMapper.writeValueAsString(loginRequest)
+        val result = mockMvc.perform(
+            post(loginUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson)
+        )
+            .andExpect(status().isOk)
+            .andReturn()
+        val loginResponse =
+            objectMapper.readValue(result.response.contentAsString, LoginResponse::class.java)
+
+        mockMvc.perform(
+            get(meUrl).header(
+                "Authorization",
+                "${loginResponse.tokenType} ${loginResponse.accessToken}"
+            )
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.email").value("testtest@test.com"))
+            .andExpect(jsonPath("$.name").value("사전 테스트 계정"))
+    }
+
+    @Test
+    fun `토큰이 없으면 내 정보가 조회되지 않는다`() {
+        mockMvc.perform(
+            get(meUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `토큰이 틀리면 내 정보가 조회되지 않는다`() {
+        val loginRequest = LoginRequest(
+            email = "testtest@test.com",
+            password = "testtest"
+        )
+        val loginJson = objectMapper.writeValueAsString(loginRequest)
+        val result = mockMvc.perform(
+            post(loginUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(loginJson)
+        )
+            .andExpect(status().isOk)
+            .andReturn()
+
+        val loginResponse =
+            objectMapper.readValue(result.response.contentAsString, LoginResponse::class.java)
+
+        mockMvc.perform(
+            get(meUrl)
+                .header(
+                    "Authorization",
+                    "${loginResponse.tokenType + "wrong"} ${loginResponse.accessToken}"
+                )
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
 }
