@@ -1,10 +1,12 @@
 package com.misterjerry.full_stack_practice01_backend.service
 
 import com.misterjerry.full_stack_practice01_backend.dto.CommentRequest
+import com.misterjerry.full_stack_practice01_backend.dto.CommentResponse
 import com.misterjerry.full_stack_practice01_backend.entity.Comment
 import com.misterjerry.full_stack_practice01_backend.repository.CommentRepository
 import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -34,14 +36,16 @@ class CommentService(
         return commentRepository.save(comment).id
     }
 
-    fun getComment(commentId: Long): Comment{
-        return commentRepository.findById(commentId).orElseThrow { IllegalArgumentException("유효한 댓글이 아닙니다.") }
+    fun getComment(commentId: Long): Comment {
+        return commentRepository.findById(commentId)
+            .orElseThrow { IllegalArgumentException("유효한 댓글이 아닙니다.") }
     }
-    fun deleteComment(postId:Long, authorId:Long, commentId: Long): Long {
-        val comment = commentRepository.findById(commentId)
-            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND,"유효한 댓글이 아닙니다.") }
 
-        if(postId!=comment.post.id){
+    fun deleteComment(postId: Long, authorId: Long, commentId: Long): Long {
+        val comment = commentRepository.findById(commentId)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "유효한 댓글이 아닙니다.") }
+
+        if (postId != comment.post.id) {
             throw ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "게시글 번호가 일치하지 않습니다."
@@ -56,5 +60,19 @@ class CommentService(
         }
         commentRepository.deleteById(commentId)
         return comment.id
+    }
+
+    fun getComments(postId: Long): List<CommentResponse> {
+        val comment = commentRepository.findAllByPostId(postId).map { it->
+            CommentResponse(
+                id = it.id,
+                content = it.content,
+                authorId = it.author.id,
+                createdAt = it.createdAt,
+                updatedAt = it.updatedAt
+            )
+        }
+        return comment
+
     }
 }

@@ -1,6 +1,7 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
 import com.misterjerry.full_stack_practice01_backend.dto.CommentRequest
+import com.misterjerry.full_stack_practice01_backend.dto.CommentResponse
 import com.misterjerry.full_stack_practice01_backend.entity.Comment
 import com.misterjerry.full_stack_practice01_backend.service.CommentService
 import io.swagger.v3.oas.annotations.Operation
@@ -80,5 +81,17 @@ class CommentController(
                     commentId = commentId
                 )
             )
+    }
+
+    @Operation(summary = "해당 게시글의 댓글 전체 조회", description = "게시글에 해당하는 댓글 전체를 조회합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("{postId}/comments")
+    fun getComments(
+        @AuthenticationPrincipal jwt: Jwt,
+        @PathVariable postId: Long
+    ): ResponseEntity<List<CommentResponse>>{
+
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.getComments(postId))
+
     }
 }
