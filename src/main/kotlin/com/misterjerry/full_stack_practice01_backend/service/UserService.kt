@@ -1,6 +1,5 @@
 package com.misterjerry.full_stack_practice01_backend.service
 
-import com.misterjerry.full_stack_practice01_backend.dto.LoginRequest
 import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UserResponse
 import com.misterjerry.full_stack_practice01_backend.entity.User
@@ -18,7 +17,7 @@ class UserService(
 ) {
     fun signUp(request: SignUpRequest): Long {
         if (userRepository.existsByEmail(request.email)) {
-            throw IllegalArgumentException("이미 가입된 이메일 입니다.")
+            throw ResponseStatusException(HttpStatus.CONFLICT, "이미 가입된 이메일 입니다.")
         }
 
         val encodedPassword = passwordEncoder.encode(request.password)
@@ -50,7 +49,6 @@ class UserService(
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다.") }
         return UserResponse(user.id, user.email, user.name)
     }
-
 
 
 }
