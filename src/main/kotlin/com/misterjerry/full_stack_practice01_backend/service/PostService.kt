@@ -32,12 +32,21 @@ class PostService(
         return postRepository.save(post).id
     }
 
-    fun searchPost(postId: Long): Post {
-        return postRepository.findById(postId)
+    fun searchPost(postId: Long): GetPostResponse {
+        val post =  postRepository.findById(postId)
+            .map {
+            GetPostResponse(
+                title = it.title,
+                content = it.content,
+                authorName = it.author.name,
+                createdAt = it.createdAt,
+                updatedAt = it.updatedAt,
+            )
+        }
             .orElseThrow {
                 ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다.")
-
             }
+        return post
     }
 
     @Transactional

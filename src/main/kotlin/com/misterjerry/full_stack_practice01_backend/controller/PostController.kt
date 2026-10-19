@@ -55,19 +55,9 @@ class PostController(
     fun searchPost(
         @PathVariable postId: Long
     ): ResponseEntity<GetPostResponse> {
-
         val post = postService.searchPost(postId)
-        return ResponseEntity.ok(
-            GetPostResponse(
-                title = post.title,
-                content = post.content,
-                authorName = post.author.name,
-                createdAt = post.createdAt,
-                updatedAt = post.updatedAt
-            )
-        )
+        return ResponseEntity.ok(post)
     }
-
 
     @Operation(
         summary = "게시글 수정",
