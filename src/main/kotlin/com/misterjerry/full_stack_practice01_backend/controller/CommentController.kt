@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -89,9 +90,30 @@ class CommentController(
     fun getComments(
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable postId: Long
-    ): ResponseEntity<List<CommentResponse>>{
+    ): ResponseEntity<List<CommentResponse>> {
 
         return ResponseEntity.status(HttpStatus.OK).body(commentService.getComments(postId))
+    }
+
+    @Operation(summary = "댓글 수정", description = "댓글 번호에 해당하는 댓글을 수정합니다.")
+    @SecurityRequirement(name = "bearerAuth")
+    @PatchMapping("{postId}/comments/{commentId}")
+    fun updateComment(
+        @AuthenticationPrincipal jwt: Jwt,
+        @PathVariable postId: Long,
+        @PathVariable commentId: Long,
+        @RequestBody contentRequest: CommentRequest
+    ): ResponseEntity<Long> {
+        val author = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효한 사용자가 아닙니다.")
+        return ResponseEntity.status(HttpStatus.OK).body(
+            commentService.updateComment(
+                commentId = commentId,
+                postId=postId,
+                content = contentRequest.comment,
+                authorId = author
+            )
+        )
 
     }
+
 }
