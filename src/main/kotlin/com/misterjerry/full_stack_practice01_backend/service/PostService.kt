@@ -1,5 +1,7 @@
 package com.misterjerry.full_stack_practice01_backend.service
 
+import com.misterjerry.full_stack_practice01_backend.dto.GetPostResponse
+import com.misterjerry.full_stack_practice01_backend.dto.GetPostsResponse
 import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UpdatePostRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Post
@@ -69,9 +71,25 @@ class PostService(
         return postId
     }
 
-    fun getPosts(page: Int, size: Int): Page<Post> {
+    fun getPosts(page: Int, size: Int): GetPostsResponse {
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
-        return postRepository.findAll(pageable)
+        val postList = postRepository.findAll(pageable).map {
+            GetPostResponse(
+                title = it.title,
+                content = it.content,
+                authorName = it.author.name,
+                createdAt = it.createdAt,
+                updatedAt = it.updatedAt
+            )
+        }
+        val posts = GetPostsResponse(
+            posts = postList.content,
+            totalPages = postList.totalPages,
+            totalElements = postList.totalElements,
+            currentPage = postList.number
+        )
+
+        return posts
     }
 
 }
