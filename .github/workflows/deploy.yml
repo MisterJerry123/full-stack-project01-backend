@@ -27,9 +27,13 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Run Tests
+        working-directory: .
+        run: bash ./gradlew test --no-daemon
+
       - name: Build Spring Boot JAR
         working-directory: .
-        run: bash ./gradlew clean bootJar --no-daemon
+        run: bash ./gradlew bootJar --no-daemon
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
