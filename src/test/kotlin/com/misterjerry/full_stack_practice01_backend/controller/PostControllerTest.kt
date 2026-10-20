@@ -277,7 +277,7 @@ class PostControllerTest {
 
     @Test
     fun `유효한 토큰이 있을 때는 내가 작성한 게시글이 수정된다`() {
-        val updatedPost = PostRequest(
+        val updatedPost = UpdatePostRequest(
             title = "게시글 수정",
             content = "게시글 수정"
         )
@@ -307,6 +307,55 @@ class PostControllerTest {
         )
             .andExpect(status().isNotFound)
     }
+
+    @Test
+    fun `제목에 공백만 있는 경우 수정이 되지 않는다`() {
+        val updatedPost = UpdatePostRequest(
+            title = " ",
+            content = "게시글 수정"
+        )
+        val json = objectMapper.writeValueAsString(updatedPost)
+        mockMvc.perform(
+            patch("$patchPostUrl/${post1.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `내용에 공백만 있는 경우 수정이 된다`() {
+        val updatedPost = UpdatePostRequest(
+            title = "게시글 수정",
+            content = "  "
+        )
+        val json = objectMapper.writeValueAsString(updatedPost)
+        mockMvc.perform(
+            patch("$patchPostUrl/${post1.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `내용이 없는 경우 수정이 된다`() {
+        val updatedPost = UpdatePostRequest(
+            title = "게시글 수정",
+            content = ""
+        )
+        val json = objectMapper.writeValueAsString(updatedPost)
+        mockMvc.perform(
+            patch("$patchPostUrl/${post1.id}")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isOk)
+    }
+
 
     //게시글 삭제
     @Test
