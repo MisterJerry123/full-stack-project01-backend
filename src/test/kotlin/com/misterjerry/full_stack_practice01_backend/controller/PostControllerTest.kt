@@ -1,5 +1,6 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
+import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Post
 import com.misterjerry.full_stack_practice01_backend.entity.User
 import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
@@ -10,11 +11,14 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.ObjectMapper
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -28,12 +32,16 @@ class PostControllerTest {
 
     @Autowired
     private lateinit var userRepository: UserRepository
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper
     private lateinit var user: User
     private lateinit var post1: Post
     private lateinit var post2: Post
 
     private val getPostsUrl = "/api/posts"
     private val getPostUrl = "/api/posts"
+    private val createPostUrl = "/api/posts"
 
 
     @BeforeEach
@@ -142,5 +150,83 @@ class PostControllerTest {
             .andExpect(status().isNotFound)
     }
 
+    //게시글 작성
+    @Test
+    fun`토큰이 없으면 게시글 작성이 되지 않는다`(){
+        val newPost = PostRequest(
+            title = "게시글 작성 테스트",
+            content = "게시글 작성 테스트",
+        )
+        val json = objectMapper.writeValueAsString(newPost)
+        mockMvc.perform(
+            post(createPostUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+        )
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun`유효한 토큰인 경우 게시글 작성이 된다`(){
+        val newPost = PostRequest(
+            title = "게시글 작성 테스트",
+            content = "게시글 작성 테스트",
+        )
+        val json = objectMapper.writeValueAsString(newPost)
+        mockMvc.perform(
+            post(createPostUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isCreated)
+    }
+
+    @Test
+    fun`제목에 공백만 있는 경우 게시글 작성이 되지 않는다`(){
+        val newPost = PostRequest(
+            title = " ",
+            content = "게시글 작성 테스트",
+        )
+        val json = objectMapper.writeValueAsString(newPost)
+        mockMvc.perform(
+            post(createPostUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun`게시글 내용에 공백만 있는 경우 게시글 작성이 된다`(){
+        val newPost = PostRequest(
+            title = "게시글 작성 테스트",
+            content = " ",
+        )
+        val json = objectMapper.writeValueAsString(newPost)
+        mockMvc.perform(
+            post(createPostUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isCreated)
+    }
+    @Test
+    fun`게시글 내용이 없는 경우 게시글 작성이 된다`(){
+        val newPost = PostRequest(
+            title = "게시글 작성 테스트",
+            content = "",
+        )
+        val json = objectMapper.writeValueAsString(newPost)
+        mockMvc.perform(
+            post(createPostUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isCreated)
+    }
 
 }
