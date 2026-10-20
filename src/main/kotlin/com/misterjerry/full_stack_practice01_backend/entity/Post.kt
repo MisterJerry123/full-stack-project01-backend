@@ -35,7 +35,10 @@ class Post(
     var createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(nullable = false)
-    var updatedAt: LocalDateTime = LocalDateTime.now()
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
+
+    @Column
+    var imageUrl: String? = null
 
 ) {
     @PrePersist

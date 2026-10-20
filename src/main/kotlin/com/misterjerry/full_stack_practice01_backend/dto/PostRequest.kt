@@ -5,5 +5,6 @@ import jakarta.validation.constraints.NotBlank
 data class PostRequest(
     @field:NotBlank(message = "제목은 필수 입력값입니다.")
     val title: String,
-    val content: String
+    val content: String,
+    val imageUrl: String? = null
 )

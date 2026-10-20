@@ -27,22 +27,24 @@ class PostService(
             title = postRequest.title,
             content = postRequest.content,
             author = user,
+            imageUrl = postRequest.imageUrl
         )
 
         return postRepository.save(post).id
     }
 
     fun searchPost(postId: Long): GetPostResponse {
-        val post =  postRepository.findById(postId)
+        val post = postRepository.findById(postId)
             .map {
-            GetPostResponse(
-                title = it.title,
-                content = it.content,
-                authorName = it.author.name,
-                createdAt = it.createdAt,
-                updatedAt = it.updatedAt,
-            )
-        }
+                GetPostResponse(
+                    title = it.title,
+                    content = it.content,
+                    authorName = it.author.name,
+                    createdAt = it.createdAt,
+                    updatedAt = it.updatedAt,
+                    imageUrl = it.imageUrl
+                )
+            }
             .orElseThrow {
                 ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다.")
             }
@@ -64,6 +66,7 @@ class PostService(
         }
         post.title = updatePostRequest.title
         post.content = updatePostRequest.content
+        post.imageUrl = updatePostRequest.imageUrl
 
         return post.id
     }
@@ -88,7 +91,8 @@ class PostService(
                 content = it.content,
                 authorName = it.author.name,
                 createdAt = it.createdAt,
-                updatedAt = it.updatedAt
+                updatedAt = it.updatedAt,
+                imageUrl = it.imageUrl
             )
         }
         val posts = GetPostsResponse(
