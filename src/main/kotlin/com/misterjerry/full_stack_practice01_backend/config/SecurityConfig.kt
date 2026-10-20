@@ -33,7 +33,8 @@ class SecurityConfig {
 
                 it.requestMatchers(
                     "/health",
-                    "/bmtn"
+                    "/bmtn",
+                    "/uploads/**"
                 ).permitAll()
 
                 it.requestMatchers(
