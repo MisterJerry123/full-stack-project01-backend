@@ -33,7 +33,8 @@ class PostControllerTest {
     private lateinit var post2: Post
 
     private val getPostsUrl = "/api/posts"
-    private val getPostUrl = "/api/post}"
+    private val getPostUrl = "/api/post"
+
 
     @BeforeEach
     fun setUp() {
