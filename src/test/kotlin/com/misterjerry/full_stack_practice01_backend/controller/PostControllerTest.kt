@@ -33,6 +33,7 @@ class PostControllerTest {
     private lateinit var post2: Post
 
     private val getPostsUrl = "/api/posts"
+    private val getPostUrl = "/api/post}"
 
     @BeforeEach
     fun setUp() {
@@ -107,4 +108,38 @@ class PostControllerTest {
             .andExpect(jsonPath("$.totalElements").value(2))
             .andExpect(jsonPath("$.totalPages").value(1))
     }
+
+
+    //게시글 단건 조회
+    @Test
+    fun `토큰이 없으면 게시글 단건 조회가 되지 않는다`() {
+        mockMvc.perform(
+            get("$getPostUrl/${post1.id}")
+        ).andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `유효한 토큰과 존재하는 게시물을 조회하면 조회가 된다`(){
+        mockMvc.perform(
+            get("$getPostUrl/${post1.id}")
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.title").value(post1.title))
+            .andExpect(jsonPath("$.content").value(post1.content))
+            .andExpect(jsonPath("$.authorName").value(user.name))
+
+    }
+
+    @Test
+    fun `없는 게시글을 조회하면 조회되지 않는다`() {
+        mockMvc.perform(
+            get("$getPostUrl/404")
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isNotFound)
+    }
+
+
 }
