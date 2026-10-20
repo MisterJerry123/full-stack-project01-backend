@@ -15,6 +15,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -46,6 +47,7 @@ class PostControllerTest {
     private val getPostUrl = "/api/posts"
     private val createPostUrl = "/api/posts"
     private val patchPostUrl = "/api/posts"
+    private val deletePostUrl = "/api/posts"
 
 
     @BeforeEach
@@ -308,6 +310,43 @@ class PostControllerTest {
 
     //게시글 삭제
     @Test
-    fun `내 게시글이 아닌 게시글은 삭제되지 않는다`
+    fun `내 게시글이 아닌 게시글은 삭제되지 않는다`() {
+        val anotherUser = userRepository.save(
+            User(
+                email = "anotherUser@test.com",
+                password = "testtest",
+                name = "다른유저"
+            )
+        )
+        mockMvc.perform(
+            delete("$deletePostUrl/${post1.id}")
+            .with(jwt().jwt { it.subject(anotherUser.id.toString()) })
+        )
+            .andExpect(status().isForbidden)
+    }
+
+    @Test
+    fun `내 게시글이어도 토큰이 없으면 삭제되지 않는다`() {
+        mockMvc.perform(delete("$deletePostUrl/${post1.id}"))
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `내 게시글이고 토큰이 있는 경우 삭제가 된다`() {
+        mockMvc.perform(
+            delete("$deletePostUrl/${post1.id}")
+            .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun`없는 게시글을 삭제하려고 하면 404가 뜬다`(){
+        mockMvc.perform(
+            delete("$deletePostUrl/404")
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isNotFound)
+    }
 
 }
