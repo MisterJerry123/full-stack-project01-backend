@@ -306,4 +306,8 @@ class PostControllerTest {
             .andExpect(status().isNotFound)
     }
 
+    //게시글 삭제
+    @Test
+    fun `내 게시글이 아닌 게시글은 삭제되지 않는다`
+
 }
