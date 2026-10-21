@@ -38,4 +38,11 @@ class ImageService(
 
         return UploadImageResponse(imageUrl = "/uploads/$fileName")
     }
+
+    fun deleteImage(imageUrl:String){
+        val path = imageUrl.substringAfterLast("/")
+        val targetPath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(path)
+        Files.deleteIfExists(targetPath)
+
+    }
 }

@@ -18,7 +18,8 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class PostService(
     private val postRepository: PostRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val imageService: ImageService
 ) {
     fun createPost(postRequest: PostRequest, authorId: Long): Long {
         val user = userRepository.findById(authorId)
@@ -80,6 +81,9 @@ class PostService(
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "본인의 게시글만 삭제할 수 있습니다.")
         }
         postRepository.delete(post)
+        post.imageUrl?.let {
+            imageService.deleteImage(it)
+        }
         return postId
     }
 
