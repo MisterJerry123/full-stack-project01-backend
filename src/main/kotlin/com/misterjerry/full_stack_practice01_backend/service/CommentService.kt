@@ -26,7 +26,7 @@ class CommentService(
         commentRequest: CommentRequest
     ): Long {
         val post = postRepository.findById(postId)
-            .orElseThrow { throw IllegalArgumentException("유효한 게시글이 아닙니다.") }
+            .orElseThrow { throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.") }
         val user = userRepository.findById(authorId)
             .orElseThrow { throw IllegalArgumentException("유효한 유저가 아닙니다.") }
 

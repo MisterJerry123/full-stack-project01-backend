@@ -1,5 +1,6 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
+import com.misterjerry.full_stack_practice01_backend.dto.CommentRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Comment
 import com.misterjerry.full_stack_practice01_backend.entity.Post
 import com.misterjerry.full_stack_practice01_backend.entity.User
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tools.jackson.databind.ObjectMapper
@@ -47,6 +50,7 @@ class CommentControllerTest {
 
     private val getCommentUrl = "/api/posts/{postId}/comments/{commentId}"
     private val getCommentsUrl = "/api/posts/{postId}/comments"
+    private val createCommentUrl = "/api/posts/{postId}/comments"
 
     @BeforeEach
     fun setUp() {
@@ -133,7 +137,7 @@ class CommentControllerTest {
     }
 
     @Test
-    fun`토큰이 있고 게시글이 있고 댓글이 있는 경우 조회가 된다`(){
+    fun `토큰이 있고 게시글이 있고 댓글이 있는 경우 조회가 된다`() {
         mockMvc.perform(
             get(getCommentsUrl, post.id)
                 .with(jwt().jwt { it.subject(user.id.toString()) })
@@ -153,6 +157,83 @@ class CommentControllerTest {
             .andExpect(jsonPath("$.size()").value(0))
     }
 
+    //댓글 작성 테스트
+    @Test
+    fun `토큰이 없는 경우 댓글이 작성되지 않는다`() {
+        val comment = CommentRequest(
+            comment = "댓글 작성 테스트"
+        )
+        val json = objectMapper.writeValueAsString(comment)
 
+        mockMvc.perform(
+            post(createCommentUrl, post.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+        )
+            .andExpect(status().isUnauthorized)
+    }
 
+    @Test
+    fun `게시글이 없는 글에는 댓글이 작성되지 않는다`() {
+        val comment = CommentRequest(
+            comment = "댓글 작성 테스트"
+        )
+        val json = objectMapper.writeValueAsString(comment)
+
+        mockMvc.perform(
+            post(createCommentUrl, 404)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isNotFound)
+    }
+
+    @Test
+    fun `토큰이 있고 존재하는 게시글에 댓글이 작성된다`() {
+        val comment = CommentRequest(
+            comment = "댓글 작성 테스트"
+        )
+        val json = objectMapper.writeValueAsString(comment)
+
+        mockMvc.perform(
+            post(createCommentUrl, post.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isCreated)
+    }
+
+    @Test
+    fun `빈 댓글은 작성할 수 없다`() {
+        val comment = CommentRequest(
+            comment = ""
+        )
+        val json = objectMapper.writeValueAsString(comment)
+
+        mockMvc.perform(
+            post(createCommentUrl, post.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
+    fun `화이트 스페이스만 있는 댓글은 작성할 수 없다`() {
+        val comment = CommentRequest(
+            comment = "   "
+        )
+        val json = objectMapper.writeValueAsString(comment)
+
+        mockMvc.perform(
+            post(createCommentUrl, post.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isBadRequest)
+    }
 }
