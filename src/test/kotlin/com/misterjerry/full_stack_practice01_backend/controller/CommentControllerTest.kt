@@ -17,6 +17,7 @@ import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -51,6 +52,7 @@ class CommentControllerTest {
     private val getCommentUrl = "/api/posts/{postId}/comments/{commentId}"
     private val getCommentsUrl = "/api/posts/{postId}/comments"
     private val createCommentUrl = "/api/posts/{postId}/comments"
+    private val updateCommentUrl = "/api/posts/{postId}/comments/{commentId}"
 
     @BeforeEach
     fun setUp() {
@@ -85,7 +87,7 @@ class CommentControllerTest {
         )
         comment = commentRepository.save(
             Comment(
-                author = user2,
+                author = user,
                 post = post,
                 content = "댓글 테스트",
             )
@@ -236,4 +238,113 @@ class CommentControllerTest {
         )
             .andExpect(status().isBadRequest)
     }
+
+    //댓글 수정
+    @Test
+    fun `토큰이 없으면 댓글 수정이 안된다`(){
+        val updatedComment = CommentRequest(
+            comment = "수정된 댓글"
+        )
+        val json = objectMapper.writeValueAsString(updatedComment)
+
+        mockMvc.perform(patch(updateCommentUrl,post.id,comment.id)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json)
+        )
+            .andExpect(status().isUnauthorized)
+    }
+    @Test
+    fun `게시글이 없으면 댓글 수정이 안된다`(){
+        val updatedComment = CommentRequest(
+            comment = "수정된 댓글"
+        )
+        val json = objectMapper.writeValueAsString(updatedComment)
+
+        mockMvc.perform(patch(updateCommentUrl,404,comment.id)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json)
+            .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isNotFound)
+    }
+    @Test
+    fun `원 댓글 게시글 번호가 다르면 댓글 수정이 안된다`(){
+        val updatedComment = CommentRequest(
+            comment = "수정된 댓글"
+        )
+        val json = objectMapper.writeValueAsString(updatedComment)
+
+        mockMvc.perform(patch(updateCommentUrl,post2.id,comment.id)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json)
+            .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isForbidden)
+    }
+    @Test
+    fun `댓글 게시자가 다르면 댓글 수정이 안된다`(){
+        val updatedComment = CommentRequest(
+            comment = "수정된 댓글"
+        )
+        val json = objectMapper.writeValueAsString(updatedComment)
+
+        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json)
+            .with(jwt().jwt { it.subject(user2.id.toString()) })
+        )
+            .andExpect(status().isForbidden)
+    }
+    @Test
+    fun `내가 작성한 댓글은 수정 가능하다`(){
+        val updatedComment = CommentRequest(
+            comment = "수정된 댓글"
+        )
+        val json = objectMapper.writeValueAsString(updatedComment)
+
+        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json)
+            .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isOk)
+
+        mockMvc.perform(get(getCommentUrl,post.id, comment.id)
+            .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content").value(updatedComment.comment))
+    }
+    @Test
+    fun `빈 댓글로 수정할 수 없다`(){
+        val updatedComment = CommentRequest(
+            comment = ""
+        )
+        val json = objectMapper.writeValueAsString(updatedComment)
+
+        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json)
+            .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isBadRequest)
+
+    }
+    @Test
+    fun `화이트 스페이스만 있는 댓글로 수정할 수 없다`(){
+        val updatedComment = CommentRequest(
+            comment = "  "
+        )
+        val json = objectMapper.writeValueAsString(updatedComment)
+
+        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json)
+            .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+
+
 }

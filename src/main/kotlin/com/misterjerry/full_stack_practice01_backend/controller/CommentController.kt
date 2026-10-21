@@ -102,7 +102,7 @@ class CommentController(
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable postId: Long,
         @PathVariable commentId: Long,
-        @RequestBody contentRequest: CommentRequest
+        @RequestBody @Valid contentRequest: CommentRequest
     ): ResponseEntity<Long> {
         val author = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효한 사용자가 아닙니다.")
         return ResponseEntity.status(HttpStatus.OK).body(
