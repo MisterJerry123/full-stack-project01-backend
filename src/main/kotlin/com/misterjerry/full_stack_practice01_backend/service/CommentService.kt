@@ -94,6 +94,9 @@ class CommentService(
         val comment = commentRepository.findById(commentId).orElseThrow {
             ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다.")
         }
+        if(!postRepository.existsById(postId)){
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.")
+        }
         if (comment.author.id != authorId) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "본인 댓글만 수정할 수 있습니다.")
         }
