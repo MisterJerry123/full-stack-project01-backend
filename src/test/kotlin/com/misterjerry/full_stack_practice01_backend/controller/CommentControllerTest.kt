@@ -113,6 +113,7 @@ class CommentControllerTest {
                 .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content").value(comment.content))
     }
 
     //댓글 전체 조회
