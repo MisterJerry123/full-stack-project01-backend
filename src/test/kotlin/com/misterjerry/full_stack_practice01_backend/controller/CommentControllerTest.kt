@@ -16,12 +16,14 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tools.jackson.databind.ObjectMapper
+import java.nio.file.Files.delete
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -53,6 +55,7 @@ class CommentControllerTest {
     private val getCommentsUrl = "/api/posts/{postId}/comments"
     private val createCommentUrl = "/api/posts/{postId}/comments"
     private val updateCommentUrl = "/api/posts/{postId}/comments/{commentId}"
+    private val deleteCommentUrl = "/api/posts/{postId}/comments/{commentId}"
 
     @BeforeEach
     fun setUp() {
@@ -241,110 +244,163 @@ class CommentControllerTest {
 
     //댓글 수정
     @Test
-    fun `토큰이 없으면 댓글 수정이 안된다`(){
+    fun `토큰이 없으면 댓글 수정이 안된다`() {
         val updatedComment = CommentRequest(
             comment = "수정된 댓글"
         )
         val json = objectMapper.writeValueAsString(updatedComment)
 
-        mockMvc.perform(patch(updateCommentUrl,post.id,comment.id)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json)
+        mockMvc.perform(
+            patch(updateCommentUrl, post.id, comment.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
         )
             .andExpect(status().isUnauthorized)
     }
+
     @Test
-    fun `게시글이 없으면 댓글 수정이 안된다`(){
+    fun `게시글이 없으면 댓글 수정이 안된다`() {
         val updatedComment = CommentRequest(
             comment = "수정된 댓글"
         )
         val json = objectMapper.writeValueAsString(updatedComment)
 
-        mockMvc.perform(patch(updateCommentUrl,404,comment.id)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json)
-            .with(jwt().jwt { it.subject(user.id.toString()) })
+        mockMvc.perform(
+            patch(updateCommentUrl, 404, comment.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isNotFound)
     }
+
     @Test
-    fun `원 댓글 게시글 번호가 다르면 댓글 수정이 안된다`(){
+    fun `원 댓글 게시글 번호가 다르면 댓글 수정이 안된다`() {
         val updatedComment = CommentRequest(
             comment = "수정된 댓글"
         )
         val json = objectMapper.writeValueAsString(updatedComment)
 
-        mockMvc.perform(patch(updateCommentUrl,post2.id,comment.id)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json)
-            .with(jwt().jwt { it.subject(user.id.toString()) })
+        mockMvc.perform(
+            patch(updateCommentUrl, post2.id, comment.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isForbidden)
     }
+
     @Test
-    fun `댓글 게시자가 다르면 댓글 수정이 안된다`(){
+    fun `댓글 게시자가 다르면 댓글 수정이 안된다`() {
         val updatedComment = CommentRequest(
             comment = "수정된 댓글"
         )
         val json = objectMapper.writeValueAsString(updatedComment)
 
-        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json)
-            .with(jwt().jwt { it.subject(user2.id.toString()) })
+        mockMvc.perform(
+            patch(updateCommentUrl, post.id, comment.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user2.id.toString()) })
         )
             .andExpect(status().isForbidden)
     }
+
     @Test
-    fun `내가 작성한 댓글은 수정 가능하다`(){
+    fun `내가 작성한 댓글은 수정 가능하다`() {
         val updatedComment = CommentRequest(
             comment = "수정된 댓글"
         )
         val json = objectMapper.writeValueAsString(updatedComment)
 
-        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json)
-            .with(jwt().jwt { it.subject(user.id.toString()) })
+        mockMvc.perform(
+            patch(updateCommentUrl, post.id, comment.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isOk)
 
-        mockMvc.perform(get(getCommentUrl,post.id, comment.id)
-            .with(jwt().jwt { it.subject(user.id.toString()) })
+        mockMvc.perform(
+            get(getCommentUrl, post.id, comment.id)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content").value(updatedComment.comment))
     }
+
     @Test
-    fun `빈 댓글로 수정할 수 없다`(){
+    fun `빈 댓글로 수정할 수 없다`() {
         val updatedComment = CommentRequest(
             comment = ""
         )
         val json = objectMapper.writeValueAsString(updatedComment)
 
-        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json)
-            .with(jwt().jwt { it.subject(user.id.toString()) })
+        mockMvc.perform(
+            patch(updateCommentUrl, post.id, comment.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isBadRequest)
 
     }
+
     @Test
-    fun `화이트 스페이스만 있는 댓글로 수정할 수 없다`(){
+    fun `화이트 스페이스만 있는 댓글로 수정할 수 없다`() {
         val updatedComment = CommentRequest(
             comment = "  "
         )
         val json = objectMapper.writeValueAsString(updatedComment)
 
-        mockMvc.perform(patch(updateCommentUrl,post.id, comment.id)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(json)
-            .with(jwt().jwt { it.subject(user.id.toString()) })
+        mockMvc.perform(
+            patch(updateCommentUrl, post.id, comment.id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isBadRequest)
     }
 
+    //댓글 삭제
+    @Test
+    fun `토큰이 없으면 댓글이 삭제 되지 않는다`() {
+        mockMvc.perform(delete(deleteCommentUrl, post.id, comment.id))
+            .andExpect(status().isUnauthorized)
+    }
+
+    @Test
+    fun `타인 댓글은 삭제되지 않는다`() {
+        mockMvc.perform(
+            delete(deleteCommentUrl, post.id, comment.id)
+            .with(jwt().jwt { it.subject(user2.id.toString()) })
+        )
+            .andExpect(status().isForbidden)
+    }
+    @Test
+    fun `내 댓글은 삭제된다`() {
+        mockMvc.perform(
+            delete(deleteCommentUrl, post.id, comment.id)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isOk)
+    }
+    @Test
+    fun `존재하지 않는 댓글은 삭제되지 않는다`() {
+        mockMvc.perform(
+            delete(deleteCommentUrl, post.id, 404)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isNotFound)
+    }
+    @Test
+    fun `게시글 번호가 맞지 않는 댓글은 삭제되지 않는다`() {
+        mockMvc.perform(
+            delete(deleteCommentUrl, 404, comment.id)
+                .with(jwt().jwt { it.subject(user.id.toString()) })
+        )
+            .andExpect(status().isNotFound)
+    }
 
 
 }
