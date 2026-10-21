@@ -59,7 +59,7 @@ class CommentController(
         @PathVariable commentId: Long
     ): ResponseEntity<Comment> {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(commentService.getComment(commentId = commentId))
+            .body(commentService.getComment(postId = postId, commentId = commentId))
 
     }
 
@@ -108,7 +108,7 @@ class CommentController(
         return ResponseEntity.status(HttpStatus.OK).body(
             commentService.updateComment(
                 commentId = commentId,
-                postId=postId,
+                postId = postId,
                 content = contentRequest.comment,
                 authorId = author
             )
