@@ -72,6 +72,11 @@ class CommentService(
     }
 
     fun getComments(postId: Long): List<CommentResponse> {
+        if(!postRepository.existsById(postId)){
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.")
+        }
+
+
         val comment = commentRepository.findAllByPostId(postId).map { it ->
             CommentResponse(
                 id = it.id,
