@@ -17,6 +17,7 @@ class ImageService(
 ) {
 
     private val allowedExtensions = setOf("jpg", "jpeg", "png", "webp", "gif")
+    private val maxSize = 5*1024*1024
 
     fun uploadImage(file: MultipartFile): UploadImageResponse{
         if(file.isEmpty){
@@ -26,6 +27,10 @@ class ImageService(
         if(extension !in allowedExtensions){
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "허용하지 않는 파일 확장자 입니다.")
         }
+        if(file.size>maxSize){
+            throw ResponseStatusException(HttpStatus.CONTENT_TOO_LARGE, "파일의 크기는 5mb를 초과할 수 없습니다.")
+        }
+
         val fileName= "${UUID.randomUUID()}.${extension}"
 
         val uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize()
