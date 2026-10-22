@@ -35,13 +35,10 @@ import kotlin.test.assertEquals
 class PostControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
-
     @Autowired
     private lateinit var postRepository: PostRepository
-
     @Autowired
     private lateinit var userRepository: UserRepository
-
     @Autowired
     private lateinit var objectMapper: ObjectMapper
     private lateinit var user: User
@@ -54,7 +51,6 @@ class PostControllerTest {
     private val createPostUrl = "/api/posts"
     private val patchPostUrl = "/api/posts"
     private val deletePostUrl = "/api/posts"
-
 
     @BeforeEach
     fun setUp() {
@@ -76,12 +72,10 @@ class PostControllerTest {
             Post(
                 title = "테스트2",
                 content = "테스트2",
-                author = user
+                author = user,
             )
         )
-
     }
-
     //게시글 전체 조회
     @Test
     fun `토큰이 없으면 게시글 전체가 조회되지 않는다`() {
@@ -115,6 +109,10 @@ class PostControllerTest {
             .andExpect(jsonPath("$.totalElements").value(2))
             .andExpect(jsonPath("$.currentPage").value(0))
             .andExpect(jsonPath("$.posts.size()").value(2))
+            .andExpect(jsonPath("$.posts[0].totalLikes").value(0))
+            .andExpect(jsonPath("$.posts[0].isLiked").value(false))
+            .andExpect(jsonPath("$.posts[1].totalLikes").value(0))
+            .andExpect(jsonPath("$.posts[1].isLiked").value(false))
     }
 
     @Test
@@ -151,6 +149,8 @@ class PostControllerTest {
             .andExpect(jsonPath("$.title").value(post1.title))
             .andExpect(jsonPath("$.content").value(post1.content))
             .andExpect(jsonPath("$.authorName").value(user.name))
+            .andExpect(jsonPath("$.totalLikes").value(0))
+            .andExpect(jsonPath("$.isLiked").value(false))
 
     }
 
