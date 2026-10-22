@@ -1,7 +1,9 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
+import com.misterjerry.full_stack_practice01_backend.dto.UploadImageResponse
 import com.misterjerry.full_stack_practice01_backend.entity.User
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.service.ImageService
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.ObjectMapper
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -25,6 +28,12 @@ class ImageControllerTest {
 
     @Autowired
     private lateinit var userRepository: UserRepository
+
+    @Autowired
+    private lateinit var imageService: ImageService
+
+    @Autowired
+    private lateinit var objectMapper: ObjectMapper
 
     private lateinit var mockFile: MockMultipartFile
     private lateinit var user: User
@@ -111,13 +120,18 @@ class ImageControllerTest {
 
     @Test
     fun `사진 업로드가 된다`() {
-        mockMvc.perform(
+        val result = mockMvc.perform(
             multipart(imageUrl)
                 .file(mockFile)
                 .with(jwt().jwt { it.subject(user.id.toString()) })
         )
             .andExpect(status().isCreated)
             .andExpect(jsonPath("$.imageUrl").exists())
+            .andReturn()
+        val response = objectMapper.readValue(result.response.contentAsString, UploadImageResponse::class.java)
+        imageService.deleteImage(response.imageUrl)
+
+
     }
 
 }
