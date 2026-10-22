@@ -215,7 +215,7 @@ class PostControllerTest {
         val response = result.response.contentAsString.toLong()
 
         val post = postRepository.findById(response).get()
-        assertEquals(newPost.imageUrl,post.imageUrl)
+        assertEquals(newPost.imageUrl, post.imageUrl)
     }
 
     @Test
@@ -455,5 +455,9 @@ class PostControllerTest {
         )
             .andExpect(status().isNotFound)
     }
+
+
+    //getPosts에서 각 게시글에 totalLikes와 isLike 검증하는 코드 추가
+    //getPost에서 게시글에 totalLikes와 isLike 검증하는 코드 추가
 
 }
