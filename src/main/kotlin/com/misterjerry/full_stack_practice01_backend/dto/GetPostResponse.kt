@@ -8,5 +8,7 @@ data class GetPostResponse(
     val authorName: String,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val totalLikes:Long=0,
+    val isLiked: Boolean=false
 )

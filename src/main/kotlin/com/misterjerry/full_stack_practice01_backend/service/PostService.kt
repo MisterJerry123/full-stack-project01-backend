@@ -5,10 +5,10 @@ import com.misterjerry.full_stack_practice01_backend.dto.GetPostsResponse
 import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UpdatePostRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Post
+import com.misterjerry.full_stack_practice01_backend.repository.PostLikeRepository
 import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
 import jakarta.transaction.Transactional
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
@@ -19,7 +19,8 @@ import org.springframework.web.server.ResponseStatusException
 class PostService(
     private val postRepository: PostRepository,
     private val userRepository: UserRepository,
-    private val imageService: ImageService
+    private val imageService: ImageService,
+    private val postLikeRepository: PostLikeRepository
 ) {
     fun createPost(postRequest: PostRequest, authorId: Long): Long {
         val user = userRepository.findById(authorId)
@@ -34,22 +35,24 @@ class PostService(
         return postRepository.save(post).id
     }
 
-    fun searchPost(postId: Long): GetPostResponse {
-        val post = postRepository.findById(postId)
-            .map {
-                GetPostResponse(
-                    title = it.title,
-                    content = it.content,
-                    authorName = it.author.name,
-                    createdAt = it.createdAt,
-                    updatedAt = it.updatedAt,
-                    imageUrl = it.imageUrl
-                )
-            }
-            .orElseThrow {
-                ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다.")
-            }
-        return post
+    fun searchPost(postId: Long, userId: Long): GetPostResponse {
+        val post = postRepository.findById(postId).orElseThrow { throw ResponseStatusException(
+            HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.") }
+        val isLiked = postLikeRepository.findByPostIdAndUserId(postId, userId) != null
+        val totalLikes = postLikeRepository.countByPostId(postId)
+        val response =
+            GetPostResponse(
+                title = post.title,
+                content = post.content,
+                authorName = post.author.name,
+                createdAt = post.createdAt,
+                updatedAt = post.updatedAt,
+                imageUrl = post.imageUrl,
+                isLiked=isLiked,
+                totalLikes = totalLikes
+            )
+
+        return response
     }
 
     @Transactional
@@ -87,16 +90,21 @@ class PostService(
         return postId
     }
 
-    fun getPosts(page: Int, size: Int): GetPostsResponse {
+    fun getPosts(page: Int, size: Int, userId: Long): GetPostsResponse {
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         val postList = postRepository.findAll(pageable).map {
+            val isLiked = postLikeRepository.findByPostIdAndUserId(postId = it.id, userId=userId)!=null
+            val totalLiked = postLikeRepository.countByPostId(it.id)
+
             GetPostResponse(
                 title = it.title,
                 content = it.content,
                 authorName = it.author.name,
                 createdAt = it.createdAt,
                 updatedAt = it.updatedAt,
-                imageUrl = it.imageUrl
+                imageUrl = it.imageUrl,
+                totalLikes = totalLiked,
+                isLiked = isLiked,
             )
         }
         val posts = GetPostsResponse(
@@ -105,8 +113,6 @@ class PostService(
             totalElements = postList.totalElements,
             currentPage = postList.number
         )
-
         return posts
     }
-
 }

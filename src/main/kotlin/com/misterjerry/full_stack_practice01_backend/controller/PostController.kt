@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("api/posts")
@@ -53,9 +54,12 @@ class PostController(
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{postId}")
     fun searchPost(
+        @AuthenticationPrincipal jwt: Jwt,
         @PathVariable postId: Long
+
     ): ResponseEntity<GetPostResponse> {
-        val post = postService.searchPost(postId)
+        val userId = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
+        val post = postService.searchPost(postId, userId)
         return ResponseEntity.ok(post)
     }
 
@@ -100,11 +104,16 @@ class PostController(
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     fun getPosts(
+        @AuthenticationPrincipal jwt: Jwt,
         @RequestParam page: Int,
         @RequestParam size: Int = 10
     ): ResponseEntity<GetPostsResponse> {
+        val userId = jwt.subject?.toLongOrNull() ?: throw ResponseStatusException(
+            HttpStatus.NOT_FOUND,
+            "존재하지 않는 유저입니다."
+        )
         return ResponseEntity.status(HttpStatus.OK).body(
-            postService.getPosts(page, size)
+            postService.getPosts(page, size, userId)
         )
     }
 }
