@@ -4,12 +4,10 @@ import com.misterjerry.full_stack_practice01_backend.dto.GetPostResponse
 import com.misterjerry.full_stack_practice01_backend.dto.GetPostsResponse
 import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UpdatePostRequest
-import com.misterjerry.full_stack_practice01_backend.entity.Post
 import com.misterjerry.full_stack_practice01_backend.service.PostService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import jakarta.validation.Valid
-import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -59,7 +57,7 @@ class PostController(
 
     ): ResponseEntity<GetPostResponse> {
         val userId = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
-        val post = postService.searchPost(postId, userId)
+        val post = postService.getPost(postId, userId)
         return ResponseEntity.ok(post)
     }
 

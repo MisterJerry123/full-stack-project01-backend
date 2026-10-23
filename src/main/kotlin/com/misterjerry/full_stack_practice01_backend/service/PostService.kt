@@ -35,20 +35,24 @@ class PostService(
         return postRepository.save(post).id
     }
 
-    fun searchPost(postId: Long, userId: Long): GetPostResponse {
-        val post = postRepository.findById(postId).orElseThrow { throw ResponseStatusException(
-            HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.") }
+    fun getPost(postId: Long, userId: Long): GetPostResponse {
+        val post = postRepository.findById(postId).orElseThrow {
+            throw ResponseStatusException(
+                HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다."
+            )
+        }
         val isLiked = postLikeRepository.findByPostIdAndUserId(postId, userId) != null
         val totalLikes = postLikeRepository.countByPostId(postId)
         val response =
             GetPostResponse(
+                id=post.id,
                 title = post.title,
                 content = post.content,
                 authorName = post.author.name,
                 createdAt = post.createdAt,
                 updatedAt = post.updatedAt,
                 imageUrl = post.imageUrl,
-                isLiked=isLiked,
+                isLiked = isLiked,
                 totalLikes = totalLikes
             )
 
@@ -93,10 +97,12 @@ class PostService(
     fun getPosts(page: Int, size: Int, userId: Long): GetPostsResponse {
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
         val postList = postRepository.findAll(pageable).map {
-            val isLiked = postLikeRepository.findByPostIdAndUserId(postId = it.id, userId=userId)!=null
+            val isLiked =
+                postLikeRepository.findByPostIdAndUserId(postId = it.id, userId = userId) != null
             val totalLiked = postLikeRepository.countByPostId(it.id)
 
             GetPostResponse(
+                id = it.id,
                 title = it.title,
                 content = it.content,
                 authorName = it.author.name,
