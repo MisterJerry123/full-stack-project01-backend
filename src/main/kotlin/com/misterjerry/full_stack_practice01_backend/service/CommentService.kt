@@ -38,16 +38,22 @@ class CommentService(
         return commentRepository.save(comment).id
     }
 
-    fun getComment(postId: Long, commentId: Long): Comment {
+    fun getComment(postId: Long, commentId: Long): CommentResponse {
 
         val comment = commentRepository.findById(commentId)
             .orElseThrow {
                 IllegalArgumentException("유효한 댓글이 아닙니다.")
             }
-        if(comment.post.id!=postId){
-            throw ResponseStatusException(HttpStatus.NOT_FOUND,"게시글이 존재하지 않습니다")
+        if (comment.post.id != postId) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다")
         }
-        return comment
+        return CommentResponse(
+            id = comment.id,
+            content = comment.content,
+            authorId = comment.author.id,
+            createdAt = comment.createdAt,
+            updatedAt = comment.updatedAt
+        )
     }
 
     fun deleteComment(postId: Long, authorId: Long, commentId: Long): Long {
@@ -72,7 +78,7 @@ class CommentService(
     }
 
     fun getComments(postId: Long): List<CommentResponse> {
-        if(!postRepository.existsById(postId)){
+        if (!postRepository.existsById(postId)) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.")
         }
 
@@ -94,7 +100,7 @@ class CommentService(
         val comment = commentRepository.findById(commentId).orElseThrow {
             ResponseStatusException(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다.")
         }
-        if(!postRepository.existsById(postId)){
+        if (!postRepository.existsById(postId)) {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 존재하지 않습니다.")
         }
         if (comment.author.id != authorId) {

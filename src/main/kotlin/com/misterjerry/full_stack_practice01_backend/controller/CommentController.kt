@@ -57,7 +57,7 @@ class CommentController(
         @AuthenticationPrincipal jwt: Jwt,
         @PathVariable postId: Long,
         @PathVariable commentId: Long
-    ): ResponseEntity<Comment> {
+    ): ResponseEntity<CommentResponse> {
         return ResponseEntity.status(HttpStatus.OK)
             .body(commentService.getComment(postId = postId, commentId = commentId))
 
