@@ -13,5 +13,6 @@ data class GetPostResponse(
     val imageUrl: String? = null,
     val totalLikes: Long = 0,
     @get:JsonProperty("isLiked")
-    val isLiked: Boolean = false
+    val isLiked: Boolean = false,
+    val totalComments:Long=0
 )

@@ -5,6 +5,7 @@ import com.misterjerry.full_stack_practice01_backend.dto.GetPostsResponse
 import com.misterjerry.full_stack_practice01_backend.dto.PostRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UpdatePostRequest
 import com.misterjerry.full_stack_practice01_backend.entity.Post
+import com.misterjerry.full_stack_practice01_backend.repository.CommentRepository
 import com.misterjerry.full_stack_practice01_backend.repository.PostLikeRepository
 import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
@@ -20,7 +21,8 @@ class PostService(
     private val postRepository: PostRepository,
     private val userRepository: UserRepository,
     private val imageService: ImageService,
-    private val postLikeRepository: PostLikeRepository
+    private val postLikeRepository: PostLikeRepository,
+    private val commentRepository: CommentRepository
 ) {
     fun createPost(postRequest: PostRequest, authorId: Long): Long {
         val user = userRepository.findById(authorId)
@@ -100,6 +102,7 @@ class PostService(
             val isLiked =
                 postLikeRepository.findByPostIdAndUserId(postId = it.id, userId = userId) != null
             val totalLiked = postLikeRepository.countByPostId(it.id)
+            val totalComments = commentRepository.countByPostId(it.id)
 
             GetPostResponse(
                 id = it.id,
@@ -111,6 +114,7 @@ class PostService(
                 imageUrl = it.imageUrl,
                 totalLikes = totalLiked,
                 isLiked = isLiked,
+                totalComments=totalComments
             )
         }
         val posts = GetPostsResponse(
