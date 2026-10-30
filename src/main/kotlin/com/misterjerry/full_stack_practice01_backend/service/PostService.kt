@@ -89,10 +89,13 @@ class PostService(
         if (post.author.id != authorId) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN, "본인의 게시글만 삭제할 수 있습니다.")
         }
-        postRepository.delete(post)
+        commentRepository.deleteAllByPostId(postId)
+        postLikeRepository.deleteAllByPostId(postId)
         post.imageUrl?.let {
             imageService.deleteImage(it)
         }
+        postRepository.delete(post)
+
         return postId
     }
 

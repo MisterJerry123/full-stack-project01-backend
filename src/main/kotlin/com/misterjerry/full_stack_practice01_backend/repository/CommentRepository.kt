@@ -7,4 +7,5 @@ interface CommentRepository: JpaRepository<Comment,Long> {
 
     fun findAllByPostId(postId:Long):List<Comment>
     fun countByPostId(postId: Long): Long
+    fun deleteAllByPostId(postId: Long)
 }
