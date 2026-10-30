@@ -47,7 +47,7 @@ class PostService(
         val totalLikes = postLikeRepository.countByPostId(postId)
         val response =
             GetPostResponse(
-                id=post.id,
+                id = post.id,
                 title = post.title,
                 content = post.content,
                 authorName = post.author.name,
@@ -91,7 +91,9 @@ class PostService(
         }
         commentRepository.deleteAllByPostId(postId)
         postLikeRepository.deleteAllByPostId(postId)
-        post.imageUrl?.let {
+        post.imageUrl?.takeIf {
+            it.isNotEmpty()
+        }?.let {
             imageService.deleteImage(it)
         }
         postRepository.delete(post)
@@ -117,7 +119,7 @@ class PostService(
                 imageUrl = it.imageUrl,
                 totalLikes = totalLiked,
                 isLiked = isLiked,
-                totalComments=totalComments
+                totalComments = totalComments
             )
         }
         val posts = GetPostsResponse(
