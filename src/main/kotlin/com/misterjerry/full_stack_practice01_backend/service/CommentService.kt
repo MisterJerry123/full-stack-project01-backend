@@ -7,7 +7,6 @@ import com.misterjerry.full_stack_practice01_backend.repository.CommentRepositor
 import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
 import jakarta.transaction.Transactional
-import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -50,6 +49,7 @@ class CommentService(
         return CommentResponse(
             id = comment.id,
             content = comment.content,
+            authorName = comment.author.name,
             authorId = comment.author.id,
             createdAt = comment.createdAt,
             updatedAt = comment.updatedAt
@@ -87,6 +87,7 @@ class CommentService(
             CommentResponse(
                 id = it.id,
                 content = it.content,
+                authorName = it.author.name,
                 authorId = it.author.id,
                 createdAt = it.createdAt,
                 updatedAt = it.updatedAt
