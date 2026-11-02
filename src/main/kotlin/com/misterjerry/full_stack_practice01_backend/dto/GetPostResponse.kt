@@ -8,6 +8,7 @@ data class GetPostResponse(
     val title: String,
     val content: String,
     val authorName: String,
+    val authorId: Long,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val imageUrl: String? = null,
