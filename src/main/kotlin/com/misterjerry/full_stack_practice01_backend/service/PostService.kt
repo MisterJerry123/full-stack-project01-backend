@@ -64,11 +64,12 @@ class PostService(
 
     @Transactional
     fun updatePost(updatePostRequest: UpdatePostRequest, postId: Long, authorId: Long): Long {
+
         val post = postRepository.findById(postId)
             .orElseThrow {
                 throw ResponseStatusException(HttpStatus.NOT_FOUND, "게시글이 없습니다.")
             }
-
+        val oldImageUrl = post.imageUrl
         if (post.author.id != authorId) {
             throw ResponseStatusException(
                 HttpStatus.FORBIDDEN,
@@ -78,6 +79,10 @@ class PostService(
         post.title = updatePostRequest.title
         post.content = updatePostRequest.content
         post.imageUrl = updatePostRequest.imageUrl
+
+        if (!(oldImageUrl.isNullOrEmpty()) && updatePostRequest.imageUrl != oldImageUrl) {
+            imageService.deleteImage(oldImageUrl)
+        }
 
         return post.id
     }
