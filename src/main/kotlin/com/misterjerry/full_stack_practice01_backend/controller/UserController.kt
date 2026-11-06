@@ -5,6 +5,8 @@ import com.misterjerry.full_stack_practice01_backend.dto.LoginResponse
 import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UserResponse
 import com.misterjerry.full_stack_practice01_backend.service.UserService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -37,7 +39,11 @@ class UserController(
             LoginResponse(accessToken)
         )
     }
-
+    @Operation(
+        summary = "내 정보를 조회합니다.",
+        description = "내 정보를 조회합니다."
+    )
+    @SecurityRequirement(name = "Bearer Auth")
     @GetMapping("/me")
     fun searchMyInfo(
         @AuthenticationPrincipal jwt: Jwt
