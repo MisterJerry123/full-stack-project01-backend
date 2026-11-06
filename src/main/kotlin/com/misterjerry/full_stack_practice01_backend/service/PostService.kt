@@ -109,32 +109,63 @@ class PostService(
 
     fun getPosts(page: Int, size: Int, userId: Long): GetPostsResponse {
         val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"))
-        val postList = postRepository.findAll(pageable).map {
-            val isLiked =
-                postLikeRepository.findByPostIdAndUserId(postId = it.id, userId = userId) != null
-            val totalLiked = postLikeRepository.countByPostId(it.id)
-            val totalComments = commentRepository.countByPostId(it.id)
 
+        val postPage = postRepository.findAll(pageable)
+        val posts = postPage.content
+        val postIds = posts.map { it.id }
+        if(postIds.isEmpty()){
+            return GetPostsResponse(emptyList(),postPage.totalPages,postPage.totalElements,postPage.number)
+        }
+        val likedPostIdSet = postLikeRepository.findLikedPostIds(postIds, userId).toSet()
+        val likeCountMap = postLikeRepository.countGroupByPostIdIn(postIds).associate { it.postId to it.count }
+        val commentCountMap = commentRepository.countGroupByPostIdIn(postIds).associate { it.postId to it.count }
+
+        val postResponseList = posts.map { post->
             GetPostResponse(
-                id = it.id,
-                title = it.title,
-                content = it.content,
-                authorName = it.author.name,
-                authorId = it.author.id,
-                createdAt = it.createdAt,
-                updatedAt = it.updatedAt,
-                imageUrl = it.imageUrl,
-                totalLikes = totalLiked,
-                isLiked = isLiked,
-                totalComments = totalComments
+                id = post.id,
+                title = post.title,
+                content = post.content,
+                authorName = post.author.name,
+                authorId = post.author.id,
+                createdAt = post.createdAt,
+                updatedAt = post.updatedAt,
+                imageUrl = post.imageUrl,
+                totalLikes = likeCountMap[post.id] ?: 0L,
+                isLiked = likedPostIdSet.contains(post.id),
+                totalComments = commentCountMap[post.id]?: 0L
             )
         }
-        val posts = GetPostsResponse(
-            posts = postList.content,
-            totalPages = postList.totalPages,
-            totalElements = postList.totalElements,
-            currentPage = postList.number
+//        val postList = postRepository.findAll(pageable).map {
+//            val isLiked =
+//                postLikeRepository.findByPostIdAndUserId(postId = it.id, userId = userId) != null
+//            val totalLiked = postLikeRepository.countByPostId(it.id)
+//            val totalComments = commentRepository.countByPostId(it.id)
+//
+//            GetPostResponse(
+//                id = it.id,
+//                title = it.title,
+//                content = it.content,
+//                authorName = it.author.name,
+//                authorId = it.author.id,
+//                createdAt = it.createdAt,
+//                updatedAt = it.updatedAt,
+//                imageUrl = it.imageUrl,
+//                totalLikes = totalLiked,
+//                isLiked = isLiked,
+//                totalComments = totalComments
+//            )
+//        }
+//        val posts = GetPostsResponse(
+//            posts = postList.content,
+//            totalPages = postList.totalPages,
+//            totalElements = postList.totalElements,
+//            currentPage = postList.number
+//        )
+        return GetPostsResponse(
+            posts = postResponseList,
+            totalPages = postPage.totalPages,
+            totalElements = postPage.totalElements,
+            currentPage = postPage.number
         )
-        return posts
     }
 }
