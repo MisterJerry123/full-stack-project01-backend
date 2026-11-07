@@ -45,6 +45,7 @@ class PostService(
         }
         val isLiked = postLikeRepository.findByPostIdAndUserId(postId, userId) != null
         val totalLikes = postLikeRepository.countByPostId(postId)
+        val totalComments = commentRepository.countByPostId(postId)
         val response =
             GetPostResponse(
                 id = post.id,
@@ -56,7 +57,8 @@ class PostService(
                 updatedAt = post.updatedAt,
                 imageUrl = post.imageUrl,
                 isLiked = isLiked,
-                totalLikes = totalLikes
+                totalLikes = totalLikes,
+                totalComments =totalComments
             )
 
         return response
