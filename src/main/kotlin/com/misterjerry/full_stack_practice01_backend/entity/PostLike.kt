@@ -8,9 +8,14 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 
 @Entity
-@Table(name = "post_likes")
+@Table(
+    name = "post_likes",
+    uniqueConstraints = [UniqueConstraint(name = "uk_post_like_user_post",columnNames = ["userId", "postId"])]
+)
+
 class PostLike(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
