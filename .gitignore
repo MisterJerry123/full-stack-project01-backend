@@ -40,3 +40,7 @@ out/
 .kotlin
 
 uploads/
+
+# IntelliJ 실행 구성 및 로컬 프로퍼티 (보안 민감 정보)
+.run/
+local.properties
