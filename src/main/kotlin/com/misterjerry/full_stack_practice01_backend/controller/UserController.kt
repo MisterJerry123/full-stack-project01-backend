@@ -3,6 +3,7 @@ package com.misterjerry.full_stack_practice01_backend.controller
 import com.misterjerry.full_stack_practice01_backend.dto.LoginRequest
 import com.misterjerry.full_stack_practice01_backend.dto.LoginResponse
 import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
+import com.misterjerry.full_stack_practice01_backend.dto.UpdateInfoRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UserResponse
 import com.misterjerry.full_stack_practice01_backend.service.UserService
 import io.swagger.v3.oas.annotations.Operation
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -43,7 +45,7 @@ class UserController(
         summary = "내 정보를 조회합니다.",
         description = "내 정보를 조회합니다."
     )
-    @SecurityRequirement(name = "Bearer Auth")
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     fun searchMyInfo(
         @AuthenticationPrincipal jwt: Jwt
@@ -51,5 +53,21 @@ class UserController(
         val userId = jwt.subject?.toLong() ?: throw IllegalStateException("유효하지 않은 유저입니다.")
         val myInfo = userService.getMyInfo(userId = userId)
         return ResponseEntity.ok(myInfo)
+    }
+
+    @Operation(
+        summary = "내 정보를 변경합니다.",
+        description = "내 정보를 변경합니다"
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @PatchMapping("/me")
+    fun updateMyInfo(
+        @AuthenticationPrincipal jwt: Jwt,
+        @RequestBody updateInfoRequest: UpdateInfoRequest
+    ): ResponseEntity<Long>{
+        val userId = jwt.subject?.toLong() ?: throw IllegalStateException("유효하지 않은 유저입니다.")
+        val response = userService.updateMyInfo(userId,updateInfoRequest)
+        return ResponseEntity.ok(response)
+
     }
 }

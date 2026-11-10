@@ -1,9 +1,11 @@
 package com.misterjerry.full_stack_practice01_backend.service
 
 import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
+import com.misterjerry.full_stack_practice01_backend.dto.UpdateInfoRequest
 import com.misterjerry.full_stack_practice01_backend.dto.UserResponse
 import com.misterjerry.full_stack_practice01_backend.entity.User
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import jakarta.transaction.Transactional
 import org.springframework.http.HttpStatus
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -50,5 +52,20 @@ class UserService(
         return UserResponse(user.id, user.email, user.name)
     }
 
-
+    @Transactional
+    fun updateMyInfo(userId:Long, updateInfoRequest: UpdateInfoRequest):Long{
+        val user = userRepository.findById(userId).orElseThrow {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND,"유저를 찾을 수 없습니다.")
+        }
+        if(updateInfoRequest.name.isNotEmpty()){
+            user.name = updateInfoRequest.name
+        }
+        if(updateInfoRequest.email.isNotEmpty() && user.email!=updateInfoRequest.email){
+            if(userRepository.existsByEmail(updateInfoRequest.email)){
+                throw ResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 이메일 입니다.")
+            }
+            user.email=updateInfoRequest.email
+        }
+        return user.id
+    }
 }
