@@ -34,6 +34,8 @@ dependencies {
 
 	//스웨거
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
+	//채팅
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
@@ -43,6 +45,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 
 
 }

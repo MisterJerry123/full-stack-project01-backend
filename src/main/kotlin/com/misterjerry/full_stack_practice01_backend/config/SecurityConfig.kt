@@ -35,7 +35,8 @@ class SecurityConfig {
                     "/health",
                     "/bmtn",
                     "/error",
-                    "/uploads/**"
+                    "/uploads/**",
+                    "/ws/**"
                 ).permitAll()
 
                 it.requestMatchers(
