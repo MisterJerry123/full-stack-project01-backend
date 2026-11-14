@@ -1,0 +1,16 @@
+package com.misterjerry.full_stack_practice01_backend.repository
+
+import com.misterjerry.full_stack_practice01_backend.entity.ChattingRoom
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+
+interface ChattingRoomRepository: JpaRepository<ChattingRoom, Long> {
+    fun findByUser1IdOrUser2Id(user1Id:Long, user2Id: Long): List<ChattingRoom>
+
+    @Query("""
+        SELECT cr FROM ChattingRoom cr 
+        WHERE (cr.user1.id = :user1Id AND cr.user2.id = :user2Id)
+           OR (cr.user1.id = :user2Id AND cr.user2.id = :user1Id)
+    """)
+    fun findRoomBetweenUsers(user1Id: Long, user2Id: Long): ChattingRoom?
+}
