@@ -21,9 +21,9 @@ class ChattingRoom (
     @ManyToOne(fetch = FetchType.LAZY)
     val user2: User,
     @Column(nullable = false)
-    var createdAt: LocalDateTime = LocalDateTime.now()
-
-
+    var createdAt: LocalDateTime = LocalDateTime.now(),
+    @Column
+    val lastMessage:String? = null
 
 ){
     @PrePersist
