@@ -1,10 +1,11 @@
 package com.misterjerry.full_stack_practice01_backend.service
 
-import com.misterjerry.full_stack_practice01_backend.entity.Post
-import com.misterjerry.full_stack_practice01_backend.entity.User
-import com.misterjerry.full_stack_practice01_backend.repository.PostLikeRepository
-import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
-import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.data.entity.Post
+import com.misterjerry.full_stack_practice01_backend.data.entity.User
+import com.misterjerry.full_stack_practice01_backend.domain.repository.PostLikeRepository
+import com.misterjerry.full_stack_practice01_backend.domain.repository.PostRepository
+import com.misterjerry.full_stack_practice01_backend.domain.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.domain.service.PostLikeService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -14,8 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.atomics.AtomicInt
-import kotlin.test.assertEquals
 
 @SpringBootTest
 class PostLikeServiceTest {

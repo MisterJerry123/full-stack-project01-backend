@@ -1,10 +1,10 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
-import com.misterjerry.full_stack_practice01_backend.dto.LoginRequest
-import com.misterjerry.full_stack_practice01_backend.dto.LoginResponse
-import com.misterjerry.full_stack_practice01_backend.dto.SignUpRequest
-import com.misterjerry.full_stack_practice01_backend.entity.User
-import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.LoginRequest
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.LoginResponse
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.SignUpRequest
+import com.misterjerry.full_stack_practice01_backend.data.entity.User
+import com.misterjerry.full_stack_practice01_backend.domain.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

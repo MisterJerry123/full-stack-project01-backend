@@ -1,12 +1,12 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
-import com.misterjerry.full_stack_practice01_backend.dto.CommentRequest
-import com.misterjerry.full_stack_practice01_backend.entity.Comment
-import com.misterjerry.full_stack_practice01_backend.entity.Post
-import com.misterjerry.full_stack_practice01_backend.entity.User
-import com.misterjerry.full_stack_practice01_backend.repository.CommentRepository
-import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
-import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.CommentRequest
+import com.misterjerry.full_stack_practice01_backend.data.entity.Comment
+import com.misterjerry.full_stack_practice01_backend.data.entity.Post
+import com.misterjerry.full_stack_practice01_backend.data.entity.User
+import com.misterjerry.full_stack_practice01_backend.domain.repository.CommentRepository
+import com.misterjerry.full_stack_practice01_backend.domain.repository.PostRepository
+import com.misterjerry.full_stack_practice01_backend.domain.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tools.jackson.databind.ObjectMapper
-import java.nio.file.Files.delete
 
 @SpringBootTest
 @AutoConfigureMockMvc

@@ -1,11 +1,11 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
-import com.misterjerry.full_stack_practice01_backend.entity.Post
-import com.misterjerry.full_stack_practice01_backend.entity.PostLike
-import com.misterjerry.full_stack_practice01_backend.entity.User
-import com.misterjerry.full_stack_practice01_backend.repository.PostLikeRepository
-import com.misterjerry.full_stack_practice01_backend.repository.PostRepository
-import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.data.entity.Post
+import com.misterjerry.full_stack_practice01_backend.data.entity.PostLike
+import com.misterjerry.full_stack_practice01_backend.data.entity.User
+import com.misterjerry.full_stack_practice01_backend.domain.repository.PostLikeRepository
+import com.misterjerry.full_stack_practice01_backend.domain.repository.PostRepository
+import com.misterjerry.full_stack_practice01_backend.domain.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

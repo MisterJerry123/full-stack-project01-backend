@@ -1,9 +1,9 @@
 package com.misterjerry.full_stack_practice01_backend.controller
 
-import com.misterjerry.full_stack_practice01_backend.dto.UploadImageResponse
-import com.misterjerry.full_stack_practice01_backend.entity.User
-import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
-import com.misterjerry.full_stack_practice01_backend.service.ImageService
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.UploadImageResponse
+import com.misterjerry.full_stack_practice01_backend.data.entity.User
+import com.misterjerry.full_stack_practice01_backend.domain.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.domain.service.ImageService
 import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

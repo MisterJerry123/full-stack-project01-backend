@@ -1,0 +1,73 @@
+package com.misterjerry.full_stack_practice01_backend.presentation.controller
+
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.LoginRequest
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.LoginResponse
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.SignUpRequest
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.UpdateInfoRequest
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.UserResponse
+import com.misterjerry.full_stack_practice01_backend.domain.service.UserService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
+@RestController //HTTP요청을 받는 클래스
+@RequestMapping("api/users")
+class UserController(
+    private val userService: UserService
+) {
+    @PostMapping("/signUp")
+    fun signUp(
+        @RequestBody @Valid request: SignUpRequest
+    ): ResponseEntity<Long> {
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+            userService.signUp(request)
+        )
+    }
+
+    @PostMapping("/login")
+    fun login(@RequestBody @Valid request: LoginRequest): ResponseEntity<LoginResponse> {
+        val accessToken = userService.login(request.email, request.password)
+        return ResponseEntity.ok(
+            LoginResponse(accessToken)
+        )
+    }
+    @Operation(
+        summary = "내 정보를 조회합니다.",
+        description = "내 정보를 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/me")
+    fun searchMyInfo(
+        @AuthenticationPrincipal jwt: Jwt
+    ): ResponseEntity<UserResponse> {
+        val userId = jwt.subject?.toLong() ?: throw IllegalStateException("유효하지 않은 유저입니다.")
+        val myInfo = userService.getMyInfo(userId = userId)
+        return ResponseEntity.ok(myInfo)
+    }
+
+    @Operation(
+        summary = "내 정보를 변경합니다.",
+        description = "내 정보를 변경합니다"
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @PatchMapping("/me")
+    fun updateMyInfo(
+        @AuthenticationPrincipal jwt: Jwt,
+        @RequestBody updateInfoRequest: UpdateInfoRequest
+    ): ResponseEntity<Long>{
+        val userId = jwt.subject?.toLong() ?: throw IllegalStateException("유효하지 않은 유저입니다.")
+        val response = userService.updateMyInfo(userId,updateInfoRequest)
+        return ResponseEntity.ok(response)
+
+    }
+}
