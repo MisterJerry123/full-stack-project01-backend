@@ -46,11 +46,7 @@ class ChatController(
         )
     }
 
-    @Operation(
-        summary = "해당 채팅방에 채팅 전송",
-        description = "해당하는 채팅방에 채팅을 보냅니다."
-    )
-    @SecurityRequirement(name = "bearerAuth")
+
     @MessageMapping("/message")
     fun sendChatting(
         @Header("Authorization") authHeader: String,

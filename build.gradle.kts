@@ -45,6 +45,9 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	//스프링울프
+	implementation("io.github.springwolf:springwolf-stomp:2.9.0")
+	runtimeOnly("io.github.springwolf:springwolf-ui:2.9.0")
 
 
 
