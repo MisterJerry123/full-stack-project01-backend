@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.PrePersist
+import org.springframework.cglib.core.Local
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -23,8 +24,9 @@ class ChattingRoom (
     @Column(nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now(),
     @Column
-    var lastMessage:String? = null
-
+    var lastMessage:String? = null,
+    @Column
+    var lastMessageCreatedAt: LocalDateTime?=null
 ){
     @PrePersist
     fun onCreate(){

@@ -75,24 +75,26 @@ class ChatService(
         )
         val savedChat = chatRepository.save(chatting)
         targetChattingRoom.lastMessage = content
+        targetChattingRoom.lastMessageCreatedAt=savedChat.createdAt
 
         return ChatResponse(
             id = savedChat.id,
             content = savedChat.content,
             createdAt = savedChat.createdAt,
             writerId = sender.id,
-            writerName = sender.name
+            writerName = sender.name,
         )
     }
 
     fun getChattingRooms(myId: Long): GetChattingRoomsResponse {
-        val chattingRooms = chattingRoomRepository.findByUser1IdOrUser2Id(myId, myId).map {
+        val chattingRooms = chattingRoomRepository.findByUserId(myId).map {
             val partner = if (it.user1.id == myId) it.user2 else it.user1
             GetChattingRoomResponse(
                 id = it.id,
                 partnerName = partner.name,
                 createdAt = it.createdAt,
-                lastMessage = it.lastMessage
+                lastMessage = it.lastMessage,
+                lastMessageCreatedAt = it.lastMessageCreatedAt
             )
         }
         return GetChattingRoomsResponse(

@@ -14,5 +14,12 @@ interface ChattingRoomRepository: JpaRepository<ChattingRoom, Long> {
     """)
     fun findRoomBetweenUsers(user1Id: Long, user2Id: Long): ChattingRoom?
 
+    @Query("""
+        SELECT cr FROM ChattingRoom cr
+        WHERE cr.user1.id=:userId OR cr.user2.id=:userId
+        ORDER BY COALESCE(cr.lastMessageCreatedAt,cr.createdAt) DESC
+    """)
+    fun findByUserId(userId: Long):List<ChattingRoom>
+
 
 }
