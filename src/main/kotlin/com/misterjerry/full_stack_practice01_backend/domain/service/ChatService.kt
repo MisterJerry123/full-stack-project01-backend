@@ -1,12 +1,13 @@
 package com.misterjerry.full_stack_practice01_backend.domain.service
 
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.ChatResponse
-import com.misterjerry.full_stack_practice01_backend.presentation.dto.ChattingRoomResponse
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattingRoomResponse
 import com.misterjerry.full_stack_practice01_backend.data.entity.Chat
 import com.misterjerry.full_stack_practice01_backend.data.entity.ChattingRoom
 import com.misterjerry.full_stack_practice01_backend.domain.repository.ChatRepository
 import com.misterjerry.full_stack_practice01_backend.domain.repository.ChattingRoomRepository
 import com.misterjerry.full_stack_practice01_backend.domain.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattingRoomsResponse
 import jakarta.transaction.Transactional
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -18,7 +19,7 @@ class ChatService(
     private val chatRepository: ChatRepository,
     private val chattingRoomRepository: ChattingRoomRepository
 ) {
-    fun createChattingRoom(myId: Long, targetId: Long): ChattingRoomResponse {
+    fun createChattingRoom(myId: Long, targetId: Long): GetChattingRoomResponse {
         if (myId == targetId) {
             throw IllegalStateException("myId와 targetId는 같을 수 없습니다.")
         }
@@ -26,7 +27,7 @@ class ChatService(
         if (targetChattingRoom != null) {
             val partnerName =
                 if (targetChattingRoom.user1.id == myId) targetChattingRoom.user2.name else targetChattingRoom.user1.name
-            return ChattingRoomResponse(
+            return GetChattingRoomResponse(
                 id = targetChattingRoom.id,
                 partnerName = partnerName,
                 createdAt = targetChattingRoom.createdAt,
@@ -45,7 +46,7 @@ class ChatService(
             )
             val partnerName =
                 if (newChattingRoom.user1.id == myId) newChattingRoom.user2.name else newChattingRoom.user1.name
-            return ChattingRoomResponse(
+            return GetChattingRoomResponse(
                 id = newChattingRoom.id,
                 partnerName = partnerName,
                 createdAt = newChattingRoom.createdAt,
@@ -76,7 +77,7 @@ class ChatService(
         targetChattingRoom.lastMessage = content
 
         return ChatResponse(
-            id=savedChat.id,
+            id = savedChat.id,
             content = savedChat.content,
             createdAt = savedChat.createdAt,
             writerId = sender.id,
@@ -84,7 +85,19 @@ class ChatService(
         )
     }
 
-    fun getChattingRooms(){
+    fun getChattingRooms(myId: Long): GetChattingRoomsResponse {
+        val chattingRooms = chattingRoomRepository.findByUser1IdOrUser2Id(myId, myId).map {
+            val partner = if (it.user1.id == myId) it.user2 else it.user1
+            GetChattingRoomResponse(
+                id = it.id,
+                partnerName = partner.name,
+                createdAt = it.createdAt,
+                lastMessage = it.lastMessage
+            )
+        }
+        return GetChattingRoomsResponse(
+            chattingRooms = chattingRooms
+        )
 
     }
 }

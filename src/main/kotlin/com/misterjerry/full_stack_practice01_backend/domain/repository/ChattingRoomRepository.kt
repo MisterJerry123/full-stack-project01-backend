@@ -13,4 +13,6 @@ interface ChattingRoomRepository: JpaRepository<ChattingRoom, Long> {
            OR (cr.user1.id = :user2Id AND cr.user2.id = :user1Id)
     """)
     fun findRoomBetweenUsers(user1Id: Long, user2Id: Long): ChattingRoom?
+
+
 }

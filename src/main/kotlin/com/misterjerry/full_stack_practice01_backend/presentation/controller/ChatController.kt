@@ -1,11 +1,13 @@
 package com.misterjerry.full_stack_practice01_backend.presentation.controller
 
-import com.misterjerry.full_stack_practice01_backend.presentation.dto.ChattingRoomResponse
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattingRoomResponse
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.CreateChattingRoomRequest
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.SendChatRequest
 import com.misterjerry.full_stack_practice01_backend.domain.service.ChatService
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattingRoomsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import org.apache.coyote.Response
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.Header
@@ -15,6 +17,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -36,7 +39,7 @@ class ChatController(
     fun createChattingRoom(
         @AuthenticationPrincipal jwt: Jwt,
         @RequestBody request: CreateChattingRoomRequest
-    ): ResponseEntity<ChattingRoomResponse> {
+    ): ResponseEntity<GetChattingRoomResponse> {
         val myId = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
         return ResponseEntity.status(HttpStatus.CREATED).body(
             chatService.createChattingRoom(myId = myId, request.targetId)
@@ -63,8 +66,19 @@ class ChatController(
             myId = myId,
             targetChattingRoomId = request.chattingRoomId
         )
-        messagingTemplate.convertAndSend("/sub/api/chats/${request.chattingRoomId}",response)
+        messagingTemplate.convertAndSend("/sub/api/chats/${request.chattingRoomId}", response)
+    }
 
-
+    @Operation(
+        summary = "채팅방 조회",
+        description = "내가 속한 채팅방을 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping
+    fun getChattingRooms(
+        @AuthenticationPrincipal jwt: Jwt
+    ): ResponseEntity<GetChattingRoomsResponse> {
+        val myId = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
+        return ResponseEntity.status(HttpStatus.OK).body(chatService.getChattingRooms(myId))
     }
 }
