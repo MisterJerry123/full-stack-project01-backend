@@ -12,8 +12,9 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/ws")
             .setAllowedOriginPatterns(
-                "http://localhost:5173",
-                "https://full-stack-project01-frontend-hazel.vercel.app"
+                "*"
+//                "http://localhost:5173",
+//                "https://full-stack-project01-frontend-hazel.vercel.app"
             )
     }
 

@@ -1,11 +1,16 @@
 package com.misterjerry.full_stack_practice01_backend.service
 
+import com.misterjerry.full_stack_practice01_backend.dto.ChatResponse
 import com.misterjerry.full_stack_practice01_backend.dto.ChattingRoomResponse
+import com.misterjerry.full_stack_practice01_backend.entity.Chat
 import com.misterjerry.full_stack_practice01_backend.entity.ChattingRoom
 import com.misterjerry.full_stack_practice01_backend.repository.ChatRepository
 import com.misterjerry.full_stack_practice01_backend.repository.ChattingRoomRepository
 import com.misterjerry.full_stack_practice01_backend.repository.UserRepository
+import jakarta.transaction.Transactional
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 
 @Service
 class ChatService(
@@ -47,5 +52,35 @@ class ChatService(
                 lastMessage = newChattingRoom.lastMessage
             )
         }
+    }
+
+    @Transactional
+    fun sendChatting(content: String, myId: Long, targetChattingRoomId: Long): ChatResponse {
+        val targetChattingRoom = chattingRoomRepository.findById(targetChattingRoomId)
+            .orElseThrow { throw IllegalArgumentException("유효하지 않은 채팅방입니다.") }
+        if (!(targetChattingRoom.user1.id == myId || targetChattingRoom.user2.id == myId)) {
+            throw ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "본인이 속하지 않은 채팅방은 접근할 수 없습니다."
+            )
+        }
+        val sender = userRepository.findById(myId)
+            .orElseThrow { throw IllegalArgumentException("유효하지 않은 유저입니다.") }
+
+        val chatting = Chat(
+            sender = sender,
+            chattingRoom = targetChattingRoom,
+            content = content,
+        )
+        val savedChat = chatRepository.save(chatting)
+        targetChattingRoom.lastMessage = content
+
+        return ChatResponse(
+            id=savedChat.id,
+            content = savedChat.content,
+            createdAt = savedChat.createdAt,
+            writerId = sender.id,
+            writerName = sender.name
+        )
     }
 }

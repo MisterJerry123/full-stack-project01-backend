@@ -23,7 +23,7 @@ class ChattingRoom (
     @Column(nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now(),
     @Column
-    val lastMessage:String? = null
+    var lastMessage:String? = null
 
 ){
     @PrePersist
