@@ -1,12 +1,13 @@
 package com.misterjerry.full_stack_practice01_backend.domain.service
 
-import com.misterjerry.full_stack_practice01_backend.presentation.dto.ChatResponse
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChatResponse
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattingRoomResponse
 import com.misterjerry.full_stack_practice01_backend.data.entity.Chat
 import com.misterjerry.full_stack_practice01_backend.data.entity.ChattingRoom
 import com.misterjerry.full_stack_practice01_backend.domain.repository.ChatRepository
 import com.misterjerry.full_stack_practice01_backend.domain.repository.ChattingRoomRepository
 import com.misterjerry.full_stack_practice01_backend.domain.repository.UserRepository
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChatsResponse
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattingRoomsResponse
 import jakarta.transaction.Transactional
 import org.springframework.http.HttpStatus
@@ -56,7 +57,7 @@ class ChatService(
     }
 
     @Transactional
-    fun sendChatting(content: String, myId: Long, targetChattingRoomId: Long): ChatResponse {
+    fun sendChatting(content: String, myId: Long, targetChattingRoomId: Long): GetChatResponse {
         val targetChattingRoom = chattingRoomRepository.findById(targetChattingRoomId)
             .orElseThrow { throw IllegalArgumentException("유효하지 않은 채팅방입니다.") }
         if (!(targetChattingRoom.user1.id == myId || targetChattingRoom.user2.id == myId)) {
@@ -75,9 +76,9 @@ class ChatService(
         )
         val savedChat = chatRepository.save(chatting)
         targetChattingRoom.lastMessage = content
-        targetChattingRoom.lastMessageCreatedAt=savedChat.createdAt
+        targetChattingRoom.lastMessageCreatedAt = savedChat.createdAt
 
-        return ChatResponse(
+        return GetChatResponse(
             id = savedChat.id,
             content = savedChat.content,
             createdAt = savedChat.createdAt,
@@ -99,6 +100,33 @@ class ChatService(
         }
         return GetChattingRoomsResponse(
             chattingRooms = chattingRooms
+        )
+
+    }
+
+    fun getChats(myId: Long, targetChattingRoomId: Long): GetChatsResponse {
+        val chattingRoom = chattingRoomRepository.findById(targetChattingRoomId).orElseThrow {
+            ResponseStatusException(
+                HttpStatus.NOT_FOUND, "채팅방이 존재하지 않습니다."
+            )
+        }
+        if(!(chattingRoom.user1.id==myId || chattingRoom.user2.id==myId)){
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "채팅방 소유자가 아닙니다.")
+        }
+
+
+        val chats =
+            chatRepository.findByChattingRoomIdOrderByCreatedAtAsc(targetChattingRoomId).map {
+                GetChatResponse(
+                    id = it.id,
+                    content = it.content,
+                    createdAt = it.createdAt,
+                    writerId = it.sender.id,
+                    writerName = it.sender.name
+                )
+            }
+        return GetChatsResponse(
+            chats = chats
         )
 
     }

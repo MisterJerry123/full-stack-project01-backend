@@ -4,6 +4,7 @@ import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattin
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.CreateChattingRoomRequest
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.SendChatRequest
 import com.misterjerry.full_stack_practice01_backend.domain.service.ChatService
+import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChatsResponse
 import com.misterjerry.full_stack_practice01_backend.presentation.dto.GetChattingRoomsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -18,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -76,5 +78,19 @@ class ChatController(
     ): ResponseEntity<GetChattingRoomsResponse> {
         val myId = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
         return ResponseEntity.status(HttpStatus.OK).body(chatService.getChattingRooms(myId))
+    }
+
+    @Operation(
+        summary = "채팅 조회",
+        description = "채팅방ID에 해당하는 채팅을 조회합니다."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{chattingRoomId}/messages")
+    fun getChats(
+        @AuthenticationPrincipal jwt: Jwt,
+        @PathVariable chattingRoomId: Long,
+    ): ResponseEntity<GetChatsResponse> {
+        val myId = jwt.subject?.toLongOrNull() ?: throw IllegalArgumentException("유효하지 않은 유저입니다.")
+        return ResponseEntity.status(HttpStatus.OK).body(chatService.getChats(myId, chattingRoomId))
     }
 }
