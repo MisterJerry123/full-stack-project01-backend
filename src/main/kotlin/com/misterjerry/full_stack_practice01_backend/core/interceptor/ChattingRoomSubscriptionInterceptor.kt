@@ -50,25 +50,33 @@ class ChattingRoomSubscriptionInterceptor(
                 emptyList()
             )
         } else if (accessor.command == StompCommand.SUBSCRIBE) {
-            val destination = accessor.destination
-            val sessionId = accessor.sessionId
+            val destination =
+                accessor.destination ?: throw BadCredentialsException("경로가 유효하지 않습니다.")
 
-            val userId = accessor.user?.name?.toLongOrNull() ?: throw BadCredentialsException("유효하지 않은 유저입니다.")
+            val userId = accessor.user?.name?.toLongOrNull()
+                ?: throw BadCredentialsException("유효하지 않은 유저입니다.")
 
-            if (destination != null && destination.startsWith(("/sub/api/chats/"))) {
-                val roomId = destination.substringAfterLast("/").toLongOrNull()
-                    ?: throw BadCredentialsException("방 번호가 유효하지 않습니다.")
+            val roomId = CHAT_SUB_REGEX.matchEntire(destination)
+                ?.groupValues
+                ?.getOrNull(1)
+                ?.toLongOrNull() ?: throw BadCredentialsException("방 번호가 유효하지 않습니다.")
 
-                if(!chattingRoomRepository.existsParticipant(roomId = roomId,userId)){
-                    throw AccessDeniedException("채팅방 참가자가 아닙니다.")
-                }
+            if (!chattingRoomRepository.existsParticipant(roomId = roomId, userId)) {
+                throw AccessDeniedException("채팅방 참가자가 아닙니다.")
             }
+        } else if (accessor.command == StompCommand.SEND) {
 
+            accessor.user?.name?.toLongOrNull() ?: throw BadCredentialsException("유효하지 않은 유저입니다.")
 
+            val destination = accessor.destination
+            if (destination != "/pub/message") {
+                throw AccessDeniedException("잘못된 요청입니다.")
+            }
         }
 
         return message
-
-
+    }
+    companion object {
+        private val CHAT_SUB_REGEX = Regex("^/sub/api/chats/(\\d+)$")
     }
 }
