@@ -3,6 +3,7 @@ package com.misterjerry.full_stack_practice01_backend.domain.repository
 import com.misterjerry.full_stack_practice01_backend.data.entity.ChattingRoom
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 interface ChattingRoomRepository: JpaRepository<ChattingRoom, Long> {
     fun findByUser1IdOrUser2Id(user1Id:Long, user2Id: Long): List<ChattingRoom>
@@ -20,6 +21,17 @@ interface ChattingRoomRepository: JpaRepository<ChattingRoom, Long> {
         ORDER BY COALESCE(cr.lastMessageCreatedAt,cr.createdAt) DESC
     """)
     fun findByUserId(userId: Long):List<ChattingRoom>
+
+
+    @Query("""
+        SELECT CASE WHEN COUNT(cr)>0 THEN true ELSE false END
+        FROM ChattingRoom cr
+        WHERE cr.id=:roomId AND (cr.user1.id=:userId OR cr.user2.id=:userId)
+    """)
+    fun existsParticipant(
+        @Param("roomId") roomId:Long,
+        @Param("userId") userId: Long
+    ): Boolean
 
 
 }
